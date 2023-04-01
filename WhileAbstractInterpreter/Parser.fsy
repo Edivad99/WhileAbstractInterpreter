@@ -1,0 +1,65 @@
+﻿%{
+open Ast
+%}
+
+%token <int> Number
+%token <string> Var
+%token EOF LPAREN RPAREN LCURLPAREN RCURLPAREN
+       ASN SEMICOLON SKIP
+       IF THEN ELSE WHILE DO PRINT READ
+       PLUS MINUS MULT DIV PERC
+       TRUE FALSE NOT AND OR
+       LT LEQ EQ GEQ GT NEQ
+
+%nonassoc THEN ELSE
+%left SEMICOLON
+%left OR
+%left AND
+%left EQ LT GT LEQ GEQ NEQ
+%left PLUS MINUS
+%left MULT DIV PERC
+
+
+%start prog
+%type <Ast.Stm> prog
+%%
+
+prog: seqStatement EOF                              { $1 }
+
+seqStatement
+    : statement                                     { $1 }
+    | seqStatement SEMICOLON seqStatement           { Seq ($1, $3) }
+
+statement
+    : Var ASN arithmExpr                            { VarDec ($1, $3) }
+    | SKIP                                          { Skip }
+    | IF boolExpr THEN statement ELSE statement     { IfThenElse ($2, $4, $6) }
+    | WHILE boolExpr DO statement                   { While ($2, $4) }
+    | PRINT arithmExpr                              { Print ($2) }
+    | READ Var                                      { Read ($2) }
+    | LCURLPAREN seqStatement RCURLPAREN            { $2 }
+
+arithmExpr
+    : Number                                        { Num ($1) }
+    | MINUS arithmExpr                              { UnOp ("-", $2) }
+    | Var                                           { Variable ($1) }
+    | arithmExpr PLUS arithmExpr                    { BinOp ($1, "+", $3) }
+    | arithmExpr MINUS arithmExpr                   { BinOp ($1, "-", $3) }
+    | arithmExpr MULT arithmExpr                    { BinOp ($1, "*", $3) }
+    | arithmExpr DIV arithmExpr                     { BinOp ($1, "/", $3) }
+    | arithmExpr PERC arithmExpr                    { BinOp ($1, "%", $3) }
+    | LPAREN arithmExpr RPAREN                      { $2 }
+
+boolExpr
+    : TRUE                                          { Boolean (true) }
+    | FALSE                                         { Boolean (false) }
+    | NOT boolExpr                                  { UnOp ("!", $2) }
+    | boolExpr AND boolExpr                         { BinOp ($1, "&&", $3) }
+    | boolExpr OR boolExpr                          { BinOp ($1, "||", $3) }
+    | arithmExpr LT arithmExpr                      { BinOp ($1, "<", $3) }
+    | arithmExpr LEQ arithmExpr                     { BinOp ($1, "<=", $3) }
+    | arithmExpr EQ arithmExpr                      { BinOp ($1, "=", $3) }
+    | arithmExpr GEQ arithmExpr                     { BinOp ($1, ">=", $3) }
+    | arithmExpr GT arithmExpr                      { BinOp ($1, ">", $3) }
+    | arithmExpr NEQ arithmExpr                     { BinOp ($1, "!=", $3) }
+    | LPAREN boolExpr RPAREN                        { $2 }
