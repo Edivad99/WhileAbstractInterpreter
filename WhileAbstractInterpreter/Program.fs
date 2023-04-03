@@ -21,4 +21,5 @@ let main args =
     Console.WriteLine(input)
     let result = evaluate input
     Console.WriteLine(result)
+    Console.ReadKey() |> ignore
     0

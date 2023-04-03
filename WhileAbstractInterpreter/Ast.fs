@@ -12,6 +12,6 @@ type Stm =
     | Skip
     | IfThenElse of Expr * Stm * Stm
     | While of Expr * Stm
-//    | Read of string //Capire come implementare la lettura e se serve
-//    | Print of Expr
+    | Read of string //Capire come implementare la lettura e se serve
+    | Print of Expr
     | Seq of Stm * Stm
