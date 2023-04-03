@@ -35,8 +35,6 @@ and tokenize = parse
 | "else"            { ELSE }
 | "while"           { WHILE }
 | "do"              { DO }
-| "print"           { PRINT }
-| "read"            { READ }
 
 // Arithmetic operators
 | '+'               { PLUS }

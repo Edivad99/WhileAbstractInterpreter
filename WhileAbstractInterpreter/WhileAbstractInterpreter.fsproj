@@ -31,4 +31,9 @@
 		<None Include="Lexer.fsl" />
 		<None Include="Parser.fsy" />
 	</ItemGroup>
+	<ItemGroup>
+		<Content Include="Examples\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
 </Project>

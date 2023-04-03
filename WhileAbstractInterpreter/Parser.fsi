@@ -14,8 +14,6 @@ type token =
   | ELSE
   | WHILE
   | DO
-  | PRINT
-  | READ
   | PLUS
   | MINUS
   | MULT
@@ -48,8 +46,6 @@ type tokenId =
     | TOKEN_ELSE
     | TOKEN_WHILE
     | TOKEN_DO
-    | TOKEN_PRINT
-    | TOKEN_READ
     | TOKEN_PLUS
     | TOKEN_MINUS
     | TOKEN_MULT

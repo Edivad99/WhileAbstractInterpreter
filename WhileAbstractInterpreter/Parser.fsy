@@ -6,7 +6,7 @@ open Ast
 %token <string> Var
 %token EOF LPAREN RPAREN LCURLPAREN RCURLPAREN
        ASN SEMICOLON SKIP
-       IF THEN ELSE WHILE DO PRINT READ
+       IF THEN ELSE WHILE DO
        PLUS MINUS MULT DIV PERC
        TRUE FALSE NOT AND OR
        LT LEQ EQ GEQ GT NEQ
@@ -28,6 +28,7 @@ prog: seqStatement EOF                              { $1 }
 
 seqStatement
     : statement                                     { $1 }
+    | seqStatement SEMICOLON                        { $1 }
     | seqStatement SEMICOLON seqStatement           { Seq ($1, $3) }
 
 statement
@@ -35,8 +36,6 @@ statement
     | SKIP                                          { Skip }
     | IF boolExpr THEN statement ELSE statement     { IfThenElse ($2, $4, $6) }
     | WHILE boolExpr DO statement                   { While ($2, $4) }
-    | PRINT arithmExpr                              { Print ($2) }
-    | READ Var                                      { Read ($2) }
     | LCURLPAREN seqStatement RCURLPAREN            { $2 }
 
 arithmExpr
