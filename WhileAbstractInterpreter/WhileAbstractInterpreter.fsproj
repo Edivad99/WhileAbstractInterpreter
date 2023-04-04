@@ -19,6 +19,8 @@
 		<Compile Include="Parser.fs" />
 		<Compile Include="Lexer.fs" />
 		<!--Normal files -->
+		<Compile Include="Domains\Domain.fs" />
+		<Compile Include="Domains\IntervalDomain.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>
 	<ItemGroup>
@@ -35,5 +37,8 @@
 		<Content Include="Examples\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
+	</ItemGroup>
+	<ItemGroup>
+		<Folder Include="Domains\" />
 	</ItemGroup>
 </Project>

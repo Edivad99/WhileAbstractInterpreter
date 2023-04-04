@@ -4,6 +4,7 @@ open System
 open System.IO
 open System.Reflection
 open FSharp.Text.Lexing
+open IntervalDomain
 
 let evaluate input =
     let lexbuf = LexBuffer<char>.FromString input
@@ -25,11 +26,13 @@ let main args =
         x := -1;
         while x != 0 do {
           x := x + 1
-        }
+        };
+        y := 2
     """
 
-    let result = evaluate input
-    //let result = evaluate_file "test.wl"
-    Console.WriteLine(result)
+    let program = evaluate input
+    //let program = evaluate_file "test.wl"
+    Console.WriteLine(program)
+    Console.WriteLine (IntervalDomain.eval program)
     Console.ReadKey() |> ignore
     0
