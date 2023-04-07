@@ -14,6 +14,7 @@
 			<OtherFlags>--module Lexer --unicode</OtherFlags>
 		</FsLex>
 		<Compile Include="Ast.fs" />
+		<Compile Include="Report\Report.fs" />
 		<!--These files will be generated from our .fsl and .fsy files by the lexer and parser tools-->
 		<Compile Include="Parser.fsi" />
 		<Compile Include="Parser.fs" />
@@ -29,6 +30,10 @@
 			<GeneratePathProperty>
 			</GeneratePathProperty>
 		</PackageReference>
+		<PackageReference Include="Handlebars.Net" Version="2.1.4">
+			<GeneratePathProperty>
+			</GeneratePathProperty>
+		</PackageReference>
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="Lexer.fsl" />
@@ -41,5 +46,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<Folder Include="Domains\" />
+		<Folder Include="Report\" />
 	</ItemGroup>
 </Project>

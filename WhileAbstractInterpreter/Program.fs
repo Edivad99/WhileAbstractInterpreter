@@ -24,8 +24,10 @@ let evaluate_file filename =
 [<EntryPoint>]
 let main args =
     let input = """
+        // Ciao
         x := 110;
         y := 0;
+        z := 16;
         //while x > y do {
         //    x:= x - 10;
         //    y:= y + 1
@@ -41,6 +43,8 @@ let main args =
 
     Console.WriteLine($"Result: {result}")
 
+    Report.generate_report input program_points
+
     //List.iter (fun env -> Console.WriteLine(env)) program_points
 
     //let a = (b :> Domain.Domain<Interval>).Less Bottom Bottom
@@ -49,5 +53,5 @@ let main args =
 
     //let a = IntervalDomain.IntervalDomain. Bottom Bottom
     //Console.WriteLine (IntervalDomain.eval program)
-    Console.ReadKey() |> ignore
+    //Console.ReadKey() |> ignore
     0
