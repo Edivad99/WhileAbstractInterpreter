@@ -21,6 +21,7 @@
 		<!--Normal files -->
 		<Compile Include="Domains\Domain.fs" />
 		<Compile Include="Domains\IntervalDomain.fs" />
+		<Compile Include="AbstractDomain.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>
 	<ItemGroup>

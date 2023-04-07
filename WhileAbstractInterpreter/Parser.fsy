@@ -39,7 +39,7 @@ statement
     | LCURLPAREN seqStatement RCURLPAREN            { $2 }
 
 arithmExpr
-    : Number                                        { Num ($1) }
+    : Number                                        { Constant ($1) }
     | MINUS arithmExpr                              { UnOp ("-", $2) }
     | Var                                           { Variable ($1) }
     | arithmExpr PLUS arithmExpr                    { BinOp ($1, "+", $3) }

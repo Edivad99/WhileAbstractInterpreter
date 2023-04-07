@@ -396,7 +396,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 42 "Parser.fsy"
-                                                                           Num (_1) 
+                                                                           Constant (_1) 
                    )
 # 42 "Parser.fsy"
                  : 'gentype_arithmExpr));

@@ -1,16 +1,16 @@
 ﻿module Domain
 
 type Domain<'T> =
-    abstract Less : 'T * 'T -> bool
-    (*abstract LessEqual : 'T * 'T -> bool
-    abstract Equal : 'T * 'T -> bool
-    abstract GreaterEqual : 'T * 'T -> bool
-    abstract Greater : 'T * 'T -> bool
-    abstract NotEqual : 'T * 'T -> bool
+    abstract Less : 'T -> bool
+    //abstract LessEqual : 'T -> bool
+    //abstract Equal : 'T -> bool
+    //abstract GreaterEqual : 'T -> bool
+    //abstract Greater : 'T -> bool
+    //abstract NotEqual: 'T -> bool
 
-    abstract Sum : 'T * 'T -> 'T
-    abstract Minus : 'T * 'T -> 'T
-    abstract Multiply : 'T * 'T -> 'T
-    abstract Division : 'T * 'T -> 'T
-    abstract Modulo : 'T * 'T -> 'T
-    abstract Negate : 'T -> 'T*)
+    //abstract Sum : 'T -> 'T
+    //abstract Minus : 'T -> 'T
+    //abstract Multiply : 'T -> 'T
+    //abstract Division : 'T -> 'T
+    //abstract Modulo : 'T -> 'T
+    //abstract Negate : unit -> 'T

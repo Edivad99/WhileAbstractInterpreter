@@ -1,7 +1,7 @@
 ﻿module Ast
 
 type Expr =
-    | Num of int
+    | Constant of int
     | Variable of string
     | Boolean of bool
     | UnOp of string * Expr
