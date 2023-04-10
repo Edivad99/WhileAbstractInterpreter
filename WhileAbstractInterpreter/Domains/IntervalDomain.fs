@@ -67,7 +67,7 @@ type Number =
             | MinusInf, Num n -> if n >= 0 then MinusInf else PlusInf
             | _ -> Num 0                // (+-Inf) / (+-Inf) = 0
 
-         override this.ToString() =
+        override this.ToString() =
             match this with
             | PlusInf -> "+\u221E"
             | Num n -> n.ToString()
@@ -111,7 +111,7 @@ type Interval =
                 Range (min, max)
             | _ -> Bottom
 
-        static member union x y =
+        static member private union x y =
             match x, y with
             | Range (a, b), Range (c, d) -> Range (List.min [a; c], List.max [b; d])
             | Bottom, _ -> y
