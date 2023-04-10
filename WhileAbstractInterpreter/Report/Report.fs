@@ -34,8 +34,16 @@ let rec private interleave (program_points: string list, code_lines: string list
         else
             program_point :: code_line :: interleave (program_points, code_lines)
 
+let private pretty_points points =
+    if Map.isEmpty points then
+        "Bottom"
+    else
+        points
+        |> Map.toList
+        |> List.map (fun (x, y) -> $"{x.ToString()}:{y.ToString()}")
+        |> String.concat "; "
 
-let private format_code (code: string, program_points) =
+let private format_code (code: string, program_points: Map<string, 'a> list) =
     let formatted_code = code.Split '\n'
                         |> Array.map (fun x -> x.TrimStart())
                         |> Array.filter (fun x -> x.Length > 0)
@@ -44,8 +52,8 @@ let private format_code (code: string, program_points) =
 
     let formatted_program_points =
         program_points
-        |> List.map (fun x -> x.ToString().Replace("map", "//"))
-        |> List.map (fun x -> $"""<span style="color: green">{x}</span>""")
+        |> List.map pretty_points
+        |> List.map (fun x -> $"""<span style="color: green">// {x}</span>""")
 
     interleave (formatted_program_points, formatted_code)
     |> String.concat("\n")
