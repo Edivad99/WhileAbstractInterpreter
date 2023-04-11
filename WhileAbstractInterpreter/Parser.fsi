@@ -18,7 +18,6 @@ type token =
   | MINUS
   | MULT
   | DIV
-  | PERC
   | TRUE
   | FALSE
   | NOT
@@ -29,7 +28,6 @@ type token =
   | EQ
   | GEQ
   | GT
-  | NEQ
   | Var of (string)
   | Number of (int)
 type tokenId = 
@@ -50,7 +48,6 @@ type tokenId =
     | TOKEN_MINUS
     | TOKEN_MULT
     | TOKEN_DIV
-    | TOKEN_PERC
     | TOKEN_TRUE
     | TOKEN_FALSE
     | TOKEN_NOT
@@ -61,7 +58,6 @@ type tokenId =
     | TOKEN_EQ
     | TOKEN_GEQ
     | TOKEN_GT
-    | TOKEN_NEQ
     | TOKEN_Var
     | TOKEN_Number
     | TOKEN_end_of_input
