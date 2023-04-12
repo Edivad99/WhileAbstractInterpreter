@@ -1,6 +1,7 @@
 ﻿module Report
 
 open HandlebarsDotNet
+open System
 open System.IO
 open System.Diagnostics
 open System.Reflection
@@ -13,9 +14,11 @@ let private source =
         <title>While Static Analyzer</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
-    <body style="margin-left: 20px;">
+    <body style="margin-left: 20px;background-color: lightgray;">
         <h3 class="display-3">While Static Analyzer</h3>
         <strong class="text-body-secondary">Davide Albiero, Damiano Mason</strong>
+        <br>
+        <small>Generated at: {{time}}</small>
         <h5 style="margin-top: 50px;" class="text-primary">Input code:</h5>
         <pre>{{{code}}}</pre>
     </body>
@@ -32,6 +35,8 @@ let rec private interleave (program_points: string list, code_lines: string list
         if (code_line.StartsWith("//")) then
             code_line :: interleave(program_point::program_points, code_lines)
         else
+            let spaces = Seq.length (Seq.takeWhile Char.IsWhiteSpace code_line)
+            let program_point = (String.replicate spaces " ") + program_point
             program_point :: code_line :: interleave (program_points, code_lines)
 
 let private pretty_points points =
@@ -45,8 +50,8 @@ let private pretty_points points =
 
 let private format_code (code: string, program_points: Map<string, 'a> list) =
     let formatted_code = code.Split '\n'
-                        |> Array.map (fun x -> x.TrimStart())
-                        |> Array.filter (fun x -> x.Length > 0)
+                        |> Array.map (fun x -> x.Replace ("        ", ""))
+                        |> Array.filter (fun x -> not (String.IsNullOrWhiteSpace x))
                         //|> Array.filter (fun x -> not (x.StartsWith("//")))
                         |> List.ofArray
 
@@ -59,7 +64,7 @@ let private format_code (code: string, program_points: Map<string, 'a> list) =
     |> String.concat("\n")
 
 let generate_report code program_points =
-    let data = {|code = format_code(code, program_points);|}
+    let data = {|code = format_code(code, program_points); time = DateTime.Now.ToString();|}
     let result = template.Invoke(data)
 
     let executableLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)

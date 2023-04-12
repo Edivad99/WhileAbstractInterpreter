@@ -7,6 +7,10 @@ type Domain<'T when 'T: comparison>() =
     // Definisce lo stato iniziale delle variabili
     abstract default_var_state: 'T
     abstract eval_var_dec: string -> Expr -> Map<string, 'T> -> Map<string, 'T>
+    abstract eval_abstr_cond: Expr -> Map<string, 'T> -> Map<string, 'T>
+
+    // Union: Slide 62/100 parte 2
+    abstract union: 'T -> 'T -> 'T
 
     member this.get_init_state program =
         let rec find_variable program =

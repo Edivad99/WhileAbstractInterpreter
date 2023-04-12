@@ -103,6 +103,8 @@ type SignDomain() =
 
     override _.default_var_state = Top
 
+    override _.union x y = failwithf "Not yet implemented"
+
     member this.eval_expr expr (state: Map<string, Sign>) =
         match expr with
         | Constant value ->
@@ -132,3 +134,5 @@ type SignDomain() =
         | Bottom -> Map.empty
         | _ -> state.Add(var_name, value)
 
+    override this.eval_abstr_cond expr state =
+        failwithf "Not yet implemented"
