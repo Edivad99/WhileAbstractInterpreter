@@ -6,6 +6,8 @@ type token =
   | RPAREN
   | LCURLPAREN
   | RCURLPAREN
+  | LSQRPAREN
+  | RSQRPAREN
   | ASN
   | SEMICOLON
   | SKIP
@@ -36,6 +38,8 @@ type tokenId =
     | TOKEN_RPAREN
     | TOKEN_LCURLPAREN
     | TOKEN_RCURLPAREN
+    | TOKEN_LSQRPAREN
+    | TOKEN_RSQRPAREN
     | TOKEN_ASN
     | TOKEN_SEMICOLON
     | TOKEN_SKIP

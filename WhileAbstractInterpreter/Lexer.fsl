@@ -58,6 +58,8 @@ and tokenize = parse
 // brakets
 | '('               { LPAREN }
 | ')'               { RPAREN }
+| '['               { LSQRPAREN }
+| ']'               { RSQRPAREN }
 | '{'               { LCURLPAREN }
 | '}'               { RCURLPAREN }
 

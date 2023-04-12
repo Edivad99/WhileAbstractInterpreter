@@ -4,7 +4,7 @@ open Ast
 
 %token <int> Number
 %token <string> Var
-%token EOF LPAREN RPAREN LCURLPAREN RCURLPAREN
+%token EOF LPAREN RPAREN LCURLPAREN RCURLPAREN LSQRPAREN RSQRPAREN
        ASN SEMICOLON SKIP
        IF THEN ELSE WHILE DO
        PLUS MINUS MULT DIV
@@ -47,6 +47,7 @@ arithmExpr
     | arithmExpr MULT arithmExpr                    { BinOp ($1, "*", $3) }
     | arithmExpr DIV arithmExpr                     { BinOp ($1, "/", $3) }
     | LPAREN arithmExpr RPAREN                      { $2 }
+    | LSQRPAREN Number SEMICOLON Number RSQRPAREN   { Range ($2, $4) }
 
 boolExpr
     : TRUE                                          { Boolean (true) }
