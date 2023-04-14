@@ -269,7 +269,7 @@ type IntervalDomain() =
                 let right_val = this.eval_expr r state
                 match right_val with
                 | Range (a, b) ->
-                    if c < a then Map.empty
+                    if c <= a then Map.empty
                     else
                         state.Add(var_name, Range(a, min (c - Num 1) b))
                 | _ -> state
