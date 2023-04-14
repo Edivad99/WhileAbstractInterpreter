@@ -260,7 +260,7 @@ type IntervalDomain() =
                 let left_val = this.eval_expr l state
                 match left_val with
                 | Range (a, b) ->
-                    if c > b then Map.empty
+                    if c >= b then Map.empty
                     else
                         state.Add(var_name, Range(max a (c + Num 1), b))
                 | _ -> state
@@ -278,7 +278,7 @@ type IntervalDomain() =
                 let right_val = this.eval_expr r state
                 match left_val, right_val with
                 | Range (a, b), Range (c, d) ->
-                    if b < c then Map.empty
+                    if b <= c then Map.empty
                     else
                         let state = state.Add(left_var_name, Range(max a (c + Num 1) , b))
                         // Non ne sono sicuro ma dovrebbe essere così
