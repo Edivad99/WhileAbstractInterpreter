@@ -12,6 +12,9 @@ type Domain<'T when 'T: comparison>() =
     // Union: Slide 62/100 parte 2
     abstract union: 'T -> 'T -> 'T
 
+    abstract widening: 'T -> 'T -> 'T
+    abstract narrowing: 'T -> 'T -> 'T
+
     member this.get_init_state program =
         let rec find_variable program =
             match program with
@@ -26,21 +29,3 @@ type Domain<'T when 'T: comparison>() =
         find_variable program
         |> Set.map (fun x -> (x, this.default_var_state))
         |> Map.ofSeq
-
-
-
-
-
-//abstract Less : 'T -> bool
-//abstract LessEqual : 'T -> bool
-//abstract Equal : 'T -> bool
-//abstract GreaterEqual : 'T -> bool
-//abstract Greater : 'T -> bool
-//abstract NotEqual: 'T -> bool
-
-//abstract Sum : 'T -> 'T
-//abstract Minus : 'T -> 'T
-//abstract Multiply : 'T -> 'T
-//abstract Division : 'T -> 'T
-//abstract Modulo : 'T -> 'T
-//abstract Negate : unit -> 'T

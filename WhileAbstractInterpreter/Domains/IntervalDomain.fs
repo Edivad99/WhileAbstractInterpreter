@@ -152,6 +152,30 @@ type IntervalDomain() =
 
     override _.union x y = Interval.union x y
 
+    override _.widening x y =
+        match x, y with
+        | Range (a, b), Range(c, d) ->
+            let lower =
+                        if a <= c then a
+                        elif Num 0 <= c && c < a then Num 0
+                        else MinusInf
+            let higher =
+                        if b >= d then b
+                        elif Num 0 >= d && d > b then Num 0
+                        else PlusInf
+            Range (lower, higher)
+        | Bottom, _ -> y
+        | _, Bottom -> x
+
+    override _.narrowing x y =
+        match x, y with
+        | Range (a, b), Range (c, d) ->
+            let lower = if a = MinusInf then c else a
+            let higher = if b = PlusInf then d else b
+            Range(lower, higher)
+        | Bottom, _ -> y
+        | _, Bottom -> x
+
     member this.eval_expr expr (state: Map<string, Interval>) =
         match expr with
         | Constant value -> Range(Num value, Num value)
@@ -169,9 +193,9 @@ type IntervalDomain() =
             | "-" -> left_val - right_val
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
-            | _ -> failwithf "Not yet implemented"
+            | _ -> failwithf "Not implemented yet"
         | Expr.Range (a, b) -> Range(Num a, Num b)
-        | _ -> failwithf "Not yet implemented"
+        | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =
         let value = this.eval_expr expr state
@@ -262,6 +286,57 @@ type IntervalDomain() =
                 | _ -> state
             | _ -> state
 
+        | BinOp (l, "=", r) ->
+            let left_val = this.eval_expr l state
+            let right_val = this.eval_expr r state
+
+            match left_val, right_val with
+            | Range (a, b), Range (c, d) ->
+                if b < c then Map.empty
+                elif d < a then Map.empty
+                else
+                    let new_value = Range(max a c, min b d)
+                    match l, r with
+                    | Variable left_var_name, Variable right_var_name ->
+                        state.Add(left_var_name, new_value).Add(right_var_name, new_value)
+                    | Variable left_var_name, _ -> state.Add(left_var_name, new_value)
+                    | _, Variable right_var_name -> state.Add(right_var_name, new_value)
+                    | _ -> state
+            | _ -> state
+
+        | BinOp (l, "!=", r) ->
+            match l, r with
+            | Constant a, Constant b -> if a <> b then state else Map.empty
+            | Variable var_name, Constant c ->
+                let c = Num c
+                let left_val = this.eval_expr l state
+                match left_val with
+                | Range (a, b) ->
+                    if c < a || c > b then state
+                    elif a < c && c < b then Map.empty
+                    elif a = c && c < b then state.Add(var_name, Range(a + Num 1, b))
+                    elif b = c && a < b then state.Add(var_name, Range(a, b - Num 1))
+                    else state
+                | _ -> state
+
+            | Constant _, Variable _ -> this.eval_abstr_cond(BinOp(r, "!=", l)) state
+
+            | Variable left_var_name, Variable right_var_name ->
+                let left_val = this.eval_expr l state
+                let right_val = this.eval_expr r state
+                match left_val, right_val with
+                | Range (a, b), Range (c, d) ->
+                    if c < a && b < d then Map.empty
+                    elif a < c && d < b then Map.empty
+                    elif a > d || b < c then state
+                    elif a > c then this.eval_abstr_cond (BinOp (r, "!=", l)) state
+                    else
+                        let state = state.Add(left_var_name, Range(a, min (c - Num 1) b))
+                        let lower_bound = min (max c (b + Num 1)) d
+                        state.Add(right_var_name, Range(lower_bound, d))
+                | _ -> state
+            | _ -> state
+
         | UnOp ("!", expr) ->
             match expr with
             | Boolean true -> Map.empty
@@ -270,6 +345,10 @@ type IntervalDomain() =
             | BinOp (l, "<=", r) -> this.eval_abstr_cond (BinOp (l, ">", r)) state
             | BinOp (l, ">", r) -> this.eval_abstr_cond (BinOp (l, "<=", r)) state
             | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (l, "<", r)) state
+
+            | BinOp (l, "=", r) -> this.eval_abstr_cond (BinOp (l, "!=", r)) state
+            | BinOp (l, "!=", r) -> this.eval_abstr_cond (BinOp (l, "=", r)) state
+
 
             | UnOp ("!", expr) -> this.eval_abstr_cond expr state
 

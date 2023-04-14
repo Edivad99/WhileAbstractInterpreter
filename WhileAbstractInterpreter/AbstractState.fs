@@ -6,16 +6,25 @@ open Domain
 
 type AbstractState<'T when 'T: comparison>(domain : Domain<'T>) =
     member _.Domain = domain
+    member _.WideningDelay = 0
 
+
+    member private _.resolve_conflicts f acc key value =
+        match Map.tryFind key acc with
+        | Some v -> Map.add key (f v value) acc
+        | None -> Map.add key value acc
 
     member private this.point_wise_union (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        let resolve_conflicts acc key value =
-            match Map.tryFind key acc with
-            | Some v -> Map.add key (this.Domain.union v value) acc
-            | None -> Map.add key value acc
+        Map.fold (fun acc key value -> this.resolve_conflicts this.Domain.union acc key value) s1 s2
 
-        Map.fold resolve_conflicts s1 s2
+    member private this.point_wise_widening (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
+        Map.fold (fun acc key value -> this.resolve_conflicts this.Domain.widening acc key value) s1 s2
 
+    member private this.point_wise_narrowing (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
+        Map.fold (fun acc key value -> this.resolve_conflicts this.Domain.narrowing acc key value) s1 s2
+
+    member private _.check_fixpoint (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
+        s1 = s2
 
     member this.eval (program: Stm, state: Map<string, 'T>, state_points: Map<string, 'T> list) =
         if state.IsEmpty then
@@ -56,5 +65,41 @@ type AbstractState<'T when 'T: comparison>(domain : Domain<'T>) =
                     @ [state_else_cond] @ false_branch_points
                     @ [next])
 
-            | _ -> failwithf "Not yet implemented"
+            | While (cond, expr) ->
+                let mutable prev_state = this.Domain.eval_abstr_cond cond state
 
+                let mutable before_body = []
+                let mutable after_body = []
+                let mutable fixpoint = false
+                let mutable iteration = 1
+
+                while not fixpoint do
+                    let s2 = this.Domain.eval_abstr_cond cond prev_state
+                    // Salva i program points
+                    before_body <- [s2]
+                    // Valuta il corpo del while con gli stati che soddisfano la condizione
+                    let while_state, body_points = this.eval(expr, s2, List.empty)
+                    after_body <- body_points
+                    // Fai l'unione point wise tra gli stati originali e gli ultimi
+                    let union = this.point_wise_union state while_state
+                    // Applica il widening per accelerare la divergenza
+                    let curr_state =
+                        if iteration > this.WideningDelay then
+                            this.point_wise_widening prev_state union
+                        else
+                            union
+
+                    // Controlla se abbiamo l'invariante
+                    fixpoint <- this.check_fixpoint prev_state curr_state
+                    // Aggiorna il prev_state
+                    prev_state <- curr_state
+                    iteration <- iteration + 1
+
+                let state_after_while = this.Domain.eval_abstr_cond (UnOp("!", cond)) prev_state
+
+                let state_after_while_narr = this.point_wise_narrowing state_after_while (List.last after_body)
+
+                (state_after_while_narr, state_points
+                    @ before_body
+                    @ after_body
+                    @ [state_after_while_narr])

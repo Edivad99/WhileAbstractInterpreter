@@ -103,7 +103,12 @@ type SignDomain() =
 
     override _.default_var_state = Top
 
-    override _.union x y = failwithf "Not yet implemented"
+    override _.union x y = failwithf "Not implemented yet"
+
+    override _.widening x y = failwithf "Not implemented yet"
+
+    override _.narrowing x y = failwithf "Not implemented yet"
+
 
     member this.eval_expr expr (state: Map<string, Sign>) =
         match expr with
@@ -125,8 +130,8 @@ type SignDomain() =
             | "-" -> left_val - right_val
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
-            | _ -> failwithf "Not yet implemented"
-        | _ -> failwithf "Not yet implemented"
+            | _ -> failwithf "Not implemented yet"
+        | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =
         let value = this.eval_expr expr state
@@ -135,4 +140,4 @@ type SignDomain() =
         | _ -> state.Add(var_name, value)
 
     override this.eval_abstr_cond expr state =
-        failwithf "Not yet implemented"
+        failwithf "Not implemented yet"
