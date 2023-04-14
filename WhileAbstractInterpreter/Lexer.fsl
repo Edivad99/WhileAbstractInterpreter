@@ -54,6 +54,7 @@ and tokenize = parse
 | '='               { EQ }
 | ">="              { GEQ }
 | '>'               { GT }
+| "!="              { NEQ }
 
 // brakets
 | '('               { LPAREN }
