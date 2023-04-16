@@ -24,41 +24,41 @@ open Ast
 %type <Ast.Stm> prog
 %%
 
-prog: seqStatement EOF                              { $1 }
+prog: seqStatement EOF                                      { $1 }
 
 seqStatement
-    : statement                                     { $1 }
-    | seqStatement SEMICOLON                        { $1 }
-    | seqStatement SEMICOLON seqStatement           { Seq ($1, $3) }
+    : statement                                             { $1 }
+    | seqStatement SEMICOLON                                { $1 }
+    | seqStatement SEMICOLON seqStatement                   { Seq ($1, $3) }
 
 statement
-    : Var ASN arithmExpr                            { VarDec ($1, $3) }
-    | SKIP                                          { Skip }
-    | IF boolExpr THEN statement ELSE statement     { IfThenElse ($2, $4, $6) }
-    | WHILE boolExpr DO statement                   { While ($2, $4) }
-    | LCURLPAREN seqStatement RCURLPAREN            { $2 }
+    : Var ASN arithmExpr                                    { VarDec ($1, $3) }
+    | SKIP                                                  { Skip }
+    | IF boolExpr THEN statement ELSE statement             { IfThenElse ($2, $4, $6) }
+    | WHILE boolExpr DO statement                           { While ($2, $4) }
+    | LCURLPAREN seqStatement RCURLPAREN                    { $2 }
 
 arithmExpr
-    : Number                                        { Constant ($1) }
-    | MINUS arithmExpr                              { UnOp ("-", $2) }
-    | Var                                           { Variable ($1) }
-    | arithmExpr PLUS arithmExpr                    { BinOp ($1, "+", $3) }
-    | arithmExpr MINUS arithmExpr                   { BinOp ($1, "-", $3) }
-    | arithmExpr MULT arithmExpr                    { BinOp ($1, "*", $3) }
-    | arithmExpr DIV arithmExpr                     { BinOp ($1, "/", $3) }
-    | LPAREN arithmExpr RPAREN                      { $2 }
-    | LSQRPAREN Number SEMICOLON Number RSQRPAREN   { Range ($2, $4) }
+    : Number                                                { Constant ($1) }
+    | MINUS arithmExpr                                      { UnOp ("-", $2) }
+    | Var                                                   { Variable ($1) }
+    | arithmExpr PLUS arithmExpr                            { BinOp ($1, "+", $3) }
+    | arithmExpr MINUS arithmExpr                           { BinOp ($1, "-", $3) }
+    | arithmExpr MULT arithmExpr                            { BinOp ($1, "*", $3) }
+    | arithmExpr DIV arithmExpr                             { BinOp ($1, "/", $3) }
+    | LPAREN arithmExpr RPAREN                              { $2 }
+    | LSQRPAREN arithmExpr SEMICOLON arithmExpr RSQRPAREN   { Range ($2, $4) }
 
 boolExpr
-    : TRUE                                          { Boolean (true) }
-    | FALSE                                         { Boolean (false) }
-    | NOT boolExpr                                  { UnOp ("!", $2) }
-    | boolExpr AND boolExpr                         { BinOp ($1, "&&", $3) }
-    | boolExpr OR boolExpr                          { BinOp ($1, "||", $3) }
-    | arithmExpr LT arithmExpr                      { BinOp ($1, "<", $3) }
-    | arithmExpr LEQ arithmExpr                     { BinOp ($1, "<=", $3) }
-    | arithmExpr EQ arithmExpr                      { BinOp ($1, "=", $3) }
-    | arithmExpr GEQ arithmExpr                     { BinOp ($1, ">=", $3) }
-    | arithmExpr GT arithmExpr                      { BinOp ($1, ">", $3) }
-    | arithmExpr NEQ arithmExpr                     { BinOp ($1, "!=", $3) }
-    | LPAREN boolExpr RPAREN                        { $2 }
+    : TRUE                                                  { Boolean (true) }
+    | FALSE                                                 { Boolean (false) }
+    | NOT boolExpr                                          { UnOp ("!", $2) }
+    | boolExpr AND boolExpr                                 { BinOp ($1, "&&", $3) }
+    | boolExpr OR boolExpr                                  { BinOp ($1, "||", $3) }
+    | arithmExpr LT arithmExpr                              { BinOp ($1, "<", $3) }
+    | arithmExpr LEQ arithmExpr                             { BinOp ($1, "<=", $3) }
+    | arithmExpr EQ arithmExpr                              { BinOp ($1, "=", $3) }
+    | arithmExpr GEQ arithmExpr                             { BinOp ($1, ">=", $3) }
+    | arithmExpr GT arithmExpr                              { BinOp ($1, ">", $3) }
+    | arithmExpr NEQ arithmExpr                             { BinOp ($1, "!=", $3) }
+    | LPAREN boolExpr RPAREN                                { $2 }

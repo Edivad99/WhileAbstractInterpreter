@@ -6,7 +6,7 @@ type Expr =
     | Boolean of bool
     | UnOp of string * Expr
     | BinOp of Expr * string * Expr
-    | Range of int * int
+    | Range of Expr * Expr
 
 type Stm =
     | VarDec of string * Expr

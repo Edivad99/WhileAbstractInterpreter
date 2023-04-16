@@ -103,7 +103,16 @@ type SignDomain() =
 
     override _.default_var_state = Top
 
-    override _.union x y = failwithf "Not implemented yet"
+    override _.union x y =
+        match x, y with
+        | _, Bottom
+        | Bottom, _ -> Bottom
+
+        | Negative, Negative -> Negative
+        | Zero, Zero -> Zero
+        | Positive, Positive -> Positive
+
+        | _ -> Top
 
     override _.widening x y = failwithf "Not implemented yet"
 
@@ -131,6 +140,10 @@ type SignDomain() =
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
+        | Range (a, b) ->
+            let left_val = this.eval_expr a state
+            let right_val = this.eval_expr b state
+            this.union left_val right_val
         | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =

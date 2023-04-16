@@ -194,7 +194,12 @@ type IntervalDomain() =
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
-        | Expr.Range (a, b) -> Range(Num a, Num b)
+        | Expr.Range (a, b) ->
+            let left_val = this.eval_expr a state
+            let right_val = this.eval_expr b state
+            match left_val, right_val with
+            | Range(a, b), Range (c, d) when a = b && c = d -> Range(a, c)
+            | _ -> failwithf "Unsupported values"
         | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =
