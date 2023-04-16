@@ -26,7 +26,7 @@ type AbstractState<'T when 'T: comparison>(domain : Domain<'T>) =
     member private _.check_fixpoint (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
         s1 = s2
 
-    member this.eval (program: Stm, state: Map<string, 'T>, state_points: Map<string, 'T> list) =
+    member private this.eval (program: Stm, state: Map<string, 'T>, state_points: Map<string, 'T> list) =
         if state.IsEmpty then
             (Map.empty, state_points @ [Map.empty])
         else
@@ -103,3 +103,7 @@ type AbstractState<'T when 'T: comparison>(domain : Domain<'T>) =
                     @ before_body
                     @ after_body
                     @ [state_after_while_narr])
+
+    member this.eval program =
+        let init_state = this.Domain.get_init_state program
+        this.eval(program, init_state, [init_state])

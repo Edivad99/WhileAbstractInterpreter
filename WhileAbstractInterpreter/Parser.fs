@@ -299,7 +299,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 27 "Parser.fsy"
-                                                                           _1 
+                                                                                   _1 
                    )
 # 27 "Parser.fsy"
                  : Ast.Stm));
@@ -310,7 +310,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 30 "Parser.fsy"
-                                                                           _1 
+                                                                                   _1 
                    )
 # 30 "Parser.fsy"
                  : 'gentype_seqStatement));
@@ -321,7 +321,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 31 "Parser.fsy"
-                                                                           _1 
+                                                                                   _1 
                    )
 # 31 "Parser.fsy"
                  : 'gentype_seqStatement));
@@ -333,7 +333,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 32 "Parser.fsy"
-                                                                           Seq (_1, _3) 
+                                                                                   Seq (_1, _3) 
                    )
 # 32 "Parser.fsy"
                  : 'gentype_seqStatement));
@@ -345,7 +345,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 35 "Parser.fsy"
-                                                                           VarDec (_1, _3) 
+                                                                                   VarDec (_1, _3) 
                    )
 # 35 "Parser.fsy"
                  : 'gentype_statement));
@@ -355,7 +355,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 36 "Parser.fsy"
-                                                                           Skip 
+                                                                                   Skip 
                    )
 # 36 "Parser.fsy"
                  : 'gentype_statement));
@@ -368,7 +368,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 37 "Parser.fsy"
-                                                                           IfThenElse (_2, _4, _6) 
+                                                                                   IfThenElse (_2, _4, _6) 
                    )
 # 37 "Parser.fsy"
                  : 'gentype_statement));
@@ -380,7 +380,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 38 "Parser.fsy"
-                                                                           While (_2, _4) 
+                                                                                   While (_2, _4) 
                    )
 # 38 "Parser.fsy"
                  : 'gentype_statement));
@@ -391,7 +391,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 39 "Parser.fsy"
-                                                                           _2 
+                                                                                   _2 
                    )
 # 39 "Parser.fsy"
                  : 'gentype_statement));
@@ -402,7 +402,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 42 "Parser.fsy"
-                                                                           Constant (_1) 
+                                                                                   Constant (_1) 
                    )
 # 42 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -413,7 +413,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 43 "Parser.fsy"
-                                                                           UnOp ("-", _2) 
+                                                                                   UnOp ("-", _2) 
                    )
 # 43 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -424,7 +424,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 44 "Parser.fsy"
-                                                                           Variable (_1) 
+                                                                                   Variable (_1) 
                    )
 # 44 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -436,7 +436,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 45 "Parser.fsy"
-                                                                           BinOp (_1, "+", _3) 
+                                                                                   BinOp (_1, "+", _3) 
                    )
 # 45 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -448,7 +448,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 46 "Parser.fsy"
-                                                                           BinOp (_1, "-", _3) 
+                                                                                   BinOp (_1, "-", _3) 
                    )
 # 46 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -460,7 +460,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 47 "Parser.fsy"
-                                                                           BinOp (_1, "*", _3) 
+                                                                                   BinOp (_1, "*", _3) 
                    )
 # 47 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -472,7 +472,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 48 "Parser.fsy"
-                                                                           BinOp (_1, "/", _3) 
+                                                                                   BinOp (_1, "/", _3) 
                    )
 # 48 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -483,7 +483,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 49 "Parser.fsy"
-                                                                           _2 
+                                                                                   _2 
                    )
 # 49 "Parser.fsy"
                  : 'gentype_arithmExpr));
@@ -505,7 +505,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 53 "Parser.fsy"
-                                                                           Boolean (true) 
+                                                                                   Boolean (true) 
                    )
 # 53 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -515,7 +515,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 54 "Parser.fsy"
-                                                                           Boolean (false) 
+                                                                                   Boolean (false) 
                    )
 # 54 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -526,7 +526,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 55 "Parser.fsy"
-                                                                           UnOp ("!", _2) 
+                                                                                   UnOp ("!", _2) 
                    )
 # 55 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -538,7 +538,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 56 "Parser.fsy"
-                                                                           BinOp (_1, "&&", _3) 
+                                                                                   BinOp (_1, "&&", _3) 
                    )
 # 56 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -550,7 +550,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 57 "Parser.fsy"
-                                                                           BinOp (_1, "||", _3) 
+                                                                                   BinOp (_1, "||", _3) 
                    )
 # 57 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -562,7 +562,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 58 "Parser.fsy"
-                                                                           BinOp (_1, "<", _3) 
+                                                                                   BinOp (_1, "<", _3) 
                    )
 # 58 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -574,7 +574,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 59 "Parser.fsy"
-                                                                           BinOp (_1, "<=", _3) 
+                                                                                   BinOp (_1, "<=", _3) 
                    )
 # 59 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -586,7 +586,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 60 "Parser.fsy"
-                                                                           BinOp (_1, "=", _3) 
+                                                                                   BinOp (_1, "=", _3) 
                    )
 # 60 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -598,7 +598,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 61 "Parser.fsy"
-                                                                           BinOp (_1, ">=", _3) 
+                                                                                   BinOp (_1, ">=", _3) 
                    )
 # 61 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -610,7 +610,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 62 "Parser.fsy"
-                                                                           BinOp (_1, ">", _3) 
+                                                                                   BinOp (_1, ">", _3) 
                    )
 # 62 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -622,7 +622,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 63 "Parser.fsy"
-                                                                           BinOp (_1, "!=", _3) 
+                                                                                   BinOp (_1, "!=", _3) 
                    )
 # 63 "Parser.fsy"
                  : 'gentype_boolExpr));
@@ -633,7 +633,7 @@ let _fsyacc_reductions = lazy [|
                 (
                    (
 # 64 "Parser.fsy"
-                                                                           _2 
+                                                                                   _2 
                    )
 # 64 "Parser.fsy"
                  : 'gentype_boolExpr));

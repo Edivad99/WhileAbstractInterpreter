@@ -31,16 +31,14 @@ let main args =
     """
     //let input = read_file "if.wl"
 
-
-    let program = evaluate input 
+    let program = evaluate input
     Console.WriteLine(program)
 
     let interval_domain = IntervalDomain()
     let sign_domain = SignDomain()
 
-    let abstract_state = AbstractState<_>(interval_domain)
-    let init_state = interval_domain.get_init_state program
-    let (result, program_points) = abstract_state.eval (program, init_state, [init_state])
+    let abstract_state = AbstractState<_>(sign_domain)
+    let result, program_points = abstract_state.eval program
 
     Console.WriteLine($"Result: {result}")
     Report.generate_report input program_points
