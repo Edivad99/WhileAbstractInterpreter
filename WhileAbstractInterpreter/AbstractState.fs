@@ -4,9 +4,9 @@ open Ast
 open Domain
 
 
-type AbstractState<'T when 'T: comparison>(domain : Domain<'T>) =
+type AbstractState<'T when 'T: comparison>(domain : Domain<'T>, ?widening_delay:int) =
     member _.Domain = domain
-    member _.WideningDelay = 0
+    member _.WideningDelay = if widening_delay.IsNone then 0 else widening_delay.Value
 
 
     member private _.resolve_conflicts f acc key value =

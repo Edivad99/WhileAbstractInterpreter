@@ -11,7 +11,7 @@ let newline (lexbuf: LexBuffer<_>) = lexbuf.EndPos <- lexbuf.EndPos.NextLine
 let whitespace = [' ' '\t']+
 let newline = ('\n' | '\r' '\n')
 let digit = ['0'-'9']
-let int = digit+
+let int = ['-']?digit+
 let string = "\"" [^'"']* "\""
 
 let idbody = ['A'-'Z' 'a'-'z' '0'-'9' '_']*

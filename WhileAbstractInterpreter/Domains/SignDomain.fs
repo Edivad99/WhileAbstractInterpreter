@@ -112,6 +112,12 @@ type SignDomain() =
         | Zero, Zero -> Zero
         | Positive, Positive -> Positive
 
+        | Positive, Zero
+        | Zero, Positive -> Positive
+
+        | Negative, Zero
+        | Zero, Negative -> Negative
+
         | _ -> Top
 
     override _.widening x y = failwithf "Not implemented yet"
