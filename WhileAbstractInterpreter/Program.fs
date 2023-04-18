@@ -23,7 +23,7 @@ let read_file filename =
 let main args =
     let input = """
         x := -1;
-        if 0 > x then {
+        if x > random then {
             x := 10
         } else {
             x := -10

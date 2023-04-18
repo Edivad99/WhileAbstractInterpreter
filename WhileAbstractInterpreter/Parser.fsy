@@ -33,6 +33,7 @@ seqStatement
 
 statement
     : Var ASN arithmExpr                                    { VarDec ($1, $3) }
+    | Var ASN RAND                                          { VarDec ($1, Random) }
     | SKIP                                                  { Skip }
     | IF boolExpr THEN statement ELSE statement             { IfThenElse ($2, $4, $6) }
     | WHILE boolExpr DO statement                           { While ($2, $4) }
@@ -40,7 +41,6 @@ statement
 
 arithmExpr
     : Number                                                { Constant ($1) }
-    | RAND                                                  { Random }
     | MINUS arithmExpr                                      { UnOp ("-", $2) }
     | Var                                                   { Variable ($1) }
     | arithmExpr PLUS arithmExpr                            { BinOp ($1, "+", $3) }
