@@ -2,6 +2,7 @@
 
 type Expr =
     | Constant of int
+    | Random
     | Variable of string
     | Boolean of bool
     | UnOp of string * Expr

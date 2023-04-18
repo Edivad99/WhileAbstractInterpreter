@@ -4,7 +4,7 @@ open Ast
 
 %token <int> Number
 %token <string> Var
-%token EOF LPAREN RPAREN LCURLPAREN RCURLPAREN LSQRPAREN RSQRPAREN
+%token EOF LPAREN RPAREN LCURLPAREN RCURLPAREN LSQRPAREN RSQRPAREN RAND 
        ASN SEMICOLON SKIP
        IF THEN ELSE WHILE DO
        PLUS MINUS MULT DIV
@@ -40,6 +40,7 @@ statement
 
 arithmExpr
     : Number                                                { Constant ($1) }
+    | RAND                                                  { Random }
     | MINUS arithmExpr                                      { UnOp ("-", $2) }
     | Var                                                   { Variable ($1) }
     | arithmExpr PLUS arithmExpr                            { BinOp ($1, "+", $3) }

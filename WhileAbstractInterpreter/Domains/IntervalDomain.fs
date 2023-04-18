@@ -179,6 +179,7 @@ type IntervalDomain() =
     member this.eval_expr expr (state: Map<string, Interval>) =
         match expr with
         | Constant value -> Range(Num value, Num value)
+        | Random -> Range(MinusInf, PlusInf)
         | Variable var_name ->
             match state.TryFind var_name with
             | Some v -> v
