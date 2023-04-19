@@ -195,7 +195,7 @@ type SignDomain() =
                 let right_val = this.eval_expr r state
 
                 match left_val with
-                | Positive, _ -> 
+                | Positive -> 
                     match right_val with
                     | Zero -> state.Add(left_var_name, Zero)
                     | Negative ->
@@ -218,7 +218,7 @@ type SignDomain() =
             | _ -> state
 
         | BinOp(l, ">", r) -> 
-            match l,r with
+            match l, r with
             | Constant a, Constant b ->
                 if a > b then state
                 else Map.empty
@@ -266,6 +266,8 @@ type SignDomain() =
                 | Top, Positive
                 | Top, Zero -> state.Add(left_var_name, Positive)
                 | _ -> state
+            | _ -> state
+        
         | BinOp(l, "=", r) -> 
             match l, r with
             | Constant a, Constant b -> if a = b then state else Map.empty
@@ -307,6 +309,8 @@ type SignDomain() =
                 | Top, Positive -> state.Add(left_var_name, Positive)
                 | Top, Negative -> state.Add(left_var_name, Negative)
                 | _ -> state
+            | _ -> state
+
         | BinOp(l, "!=", r) -> 
             match l, r with
             | Constant a, Constant b -> if a <> b then state else Map.empty
@@ -337,6 +341,7 @@ type SignDomain() =
                 | Top, Negative -> state.Add(left_var_name, Positive)
                 | _ -> state
             | _ -> state
+
         | UnOp("!", expr) ->
             match expr with
                 | Boolean true -> Map.empty
