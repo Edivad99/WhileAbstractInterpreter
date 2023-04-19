@@ -337,3 +337,19 @@ type SignDomain() =
                 | Top, Negative -> state.Add(left_var_name, Positive)
                 | _ -> state
             | _ -> state
+        | UnOp("!", expr) ->
+            match expr with
+                | Boolean true -> Map.empty
+                | Boolean false -> state
+                | BinOp (l, "<", r) -> this.eval_abstr_cond (BinOp (l, ">=", r)) state
+                | BinOp (l, "<=", r) -> this.eval_abstr_cond (BinOp (l, ">", r)) state
+                | BinOp (l, ">", r) -> this.eval_abstr_cond (BinOp (l, "<=", r)) state
+                | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (l, "<", r)) state
+
+                | BinOp (l, "=", r) -> this.eval_abstr_cond (BinOp (l, "!=", r)) state
+                | BinOp (l, "!=", r) -> this.eval_abstr_cond (BinOp (l, "=", r)) state
+
+
+                | UnOp ("!", expr) -> this.eval_abstr_cond expr state
+
+                | _ -> state
