@@ -8,24 +8,6 @@ type AbstractState<'T when 'T: comparison>(domain : Domain<'T>, ?widening_delay:
     member _.Domain = domain
     member _.WideningDelay = if widening_delay.IsNone then 0 else widening_delay.Value
 
-
-    member private _.resolve_conflicts f acc key value =
-        match Map.tryFind key acc with
-        | Some v -> Map.add key (f v value) acc
-        | None -> Map.add key value acc
-
-    member private this.point_wise_union (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        Map.fold (fun acc key value -> this.resolve_conflicts this.Domain.union acc key value) s1 s2
-
-    member private this.point_wise_widening (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        Map.fold (fun acc key value -> this.resolve_conflicts this.Domain.widening acc key value) s1 s2
-
-    member private this.point_wise_narrowing (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        Map.fold (fun acc key value -> this.resolve_conflicts this.Domain.narrowing acc key value) s1 s2
-
-    member private _.check_fixpoint (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        s1 = s2
-
     member private this.eval (program: Stm, state: Map<string, 'T>, state_points: Map<string, 'T> list) =
         if state.IsEmpty then
             (Map.empty, state_points @ [Map.empty])
@@ -58,7 +40,7 @@ type AbstractState<'T when 'T: comparison>(domain : Domain<'T>, ?widening_delay:
                     else this.eval (false_branch, state_else_cond, List.empty)
 
                 // Fai il point wise union
-                let next = this.point_wise_union s1 s2
+                let next = this.Domain.point_wise_union s1 s2
 
                 (next, state_points
                     @ [state_cond] @ true_branch_points
@@ -81,23 +63,23 @@ type AbstractState<'T when 'T: comparison>(domain : Domain<'T>, ?widening_delay:
                     let while_state, body_points = this.eval(expr, s2, List.empty)
                     after_body <- body_points
                     // Fai l'unione point wise tra gli stati originali e gli ultimi
-                    let union = this.point_wise_union state while_state
+                    let union = this.Domain.point_wise_union state while_state
                     // Applica il widening per accelerare la divergenza
                     let curr_state =
                         if iteration > this.WideningDelay then
-                            this.point_wise_widening prev_state union
+                            this.Domain.point_wise_widening prev_state union
                         else
                             union
 
                     // Controlla se abbiamo l'invariante
-                    fixpoint <- this.check_fixpoint prev_state curr_state
+                    fixpoint <- prev_state = curr_state
                     // Aggiorna il prev_state
                     prev_state <- curr_state
                     iteration <- iteration + 1
 
                 let state_after_while = this.Domain.eval_abstr_cond (UnOp("!", cond)) prev_state
 
-                let state_after_while_narr = this.point_wise_narrowing state_after_while (List.last after_body)
+                let state_after_while_narr = this.Domain.point_wise_narrowing state_after_while (List.last after_body)
 
                 (state_after_while_narr, state_points
                     @ before_body

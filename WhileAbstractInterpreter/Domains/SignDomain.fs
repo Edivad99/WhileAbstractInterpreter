@@ -124,6 +124,7 @@ type SignDomain() =
 
     override _.narrowing x y = failwithf "Not implemented yet"
 
+    override _.intersect x y = failwithf "Not implemented yet"
 
     member this.eval_expr expr (state: Map<string, Sign>) =
         match expr with
@@ -131,6 +132,7 @@ type SignDomain() =
             if value = 0 then Zero
             elif value > 0 then Positive
             else Negative
+        | Random -> Top
         | Variable var_name ->
             match state.TryFind var_name with
             | Some v -> v

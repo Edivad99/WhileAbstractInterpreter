@@ -71,6 +71,27 @@ type TestIntervalDomain () =
         Assert.AreEqual(false_branch, program_points.[4])
 
     [<TestMethod>]
+    member _.TestIfAnd () =
+        let input = """
+            x := [-40; 100];
+            if x >= 40 && x < 80 then {
+               skip;
+            } else {
+               skip;
+            }
+        """
+        let program = evaluate input
+        let interval_domain = IntervalDomain()
+        let abstract_state = AbstractState<_>(interval_domain)
+        let result, program_points = abstract_state.eval program
+
+        let true_branch = Map.empty.Add ("x", (Range(Num 40, Num 79)))
+        let false_branch = Map.empty.Add ("x", (Range(Num -40, Num 100)))
+
+        Assert.AreEqual(true_branch, program_points.[2])
+        Assert.AreEqual(false_branch, program_points.[4])
+
+    [<TestMethod>]
     member _.TestWhileIncrement () =
         let input = """
             x := 0;
@@ -112,7 +133,37 @@ type TestIntervalDomain () =
         Assert.AreEqual(post_body, program_points.[3])
         Assert.AreEqual(resultExpected, result)
 
+    [<TestMethod>]
+    member _.TestWhileAnd () =
+        let input = """
+            x := 0;
+            y := 0;
+            while x < 10 && y < 5 do {
+                x := x + 1;
+                y := y + 1;
+            }
+        """
+        let program = evaluate input
+        let interval_domain = IntervalDomain()
+        let abstract_state = AbstractState<_>(interval_domain)
+        let result, program_points = abstract_state.eval program
 
+        let pre_body =
+            Map.empty
+            |> Map.add "x" (Range(Num 0, Num 9))
+            |> Map.add "y" (Range(Num 0, Num 4))
+        let post_body =
+            Map.empty
+            |> Map.add "x" (Range(Num 1, Num 10))
+            |> Map.add "y" (Range(Num 1, Num 5))
+        let resultExpected =
+            Map.empty
+            |> Map.add "x" (Range(Num 0, Num 10))
+            |> Map.add "y" (Range(Num 0, Num 5))
+
+        Assert.AreEqual(pre_body, program_points.[3])
+        Assert.AreEqual(post_body, program_points.[5])
+        Assert.AreEqual(resultExpected, result)
 
     [<TestMethod>]
     member _.TestFactorial () =

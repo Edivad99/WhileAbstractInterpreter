@@ -176,6 +176,14 @@ type IntervalDomain() =
         | Bottom, _ -> y
         | _, Bottom -> x
 
+    override _.intersect x y =
+        match x, y with
+        | Range(a, b), Range(c, d) ->
+            let lower = max a c
+            let higher = min b d
+            if lower <= higher then Range(lower, higher) else Bottom
+        | _ -> Bottom
+
     member this.eval_expr expr (state: Map<string, Interval>) =
         match expr with
         | Constant value -> Range(Num value, Num value)
@@ -343,6 +351,16 @@ type IntervalDomain() =
                 | _ -> state
             | _ -> state
 
+        | BinOp (l, "&&", r) ->
+            let left_val = this.eval_abstr_cond l state
+            let right_val = this.eval_abstr_cond r state
+            this.point_wise_intersection left_val right_val
+
+        | BinOp (l, "||", r) ->
+            let left_val = this.eval_abstr_cond l state
+            let right_val = this.eval_abstr_cond r state
+            this.point_wise_union left_val right_val
+
         | UnOp ("!", expr) ->
             match expr with
             | Boolean true -> Map.empty
@@ -355,6 +373,11 @@ type IntervalDomain() =
             | BinOp (l, "=", r) -> this.eval_abstr_cond (BinOp (l, "!=", r)) state
             | BinOp (l, "!=", r) -> this.eval_abstr_cond (BinOp (l, "=", r)) state
 
+            | BinOp (l, ("&&" | "||" as op), r) ->
+                let not_l = UnOp("!", l)
+                let not_r = UnOp("!", r)
+                let opposite = if op = "||" then "&&" else "||"
+                this.eval_abstr_cond (BinOp (not_l, opposite, not_r)) state
 
             | UnOp ("!", expr) -> this.eval_abstr_cond expr state
 
