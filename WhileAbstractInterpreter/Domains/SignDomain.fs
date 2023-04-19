@@ -216,3 +216,53 @@ type SignDomain() =
                 //| Negative -> state
                 | _ -> state
             | _ -> state
+
+        | BinOp(l, ">", r) -> 
+            match l,r with
+            | Constant a, Constant b ->
+                if a > b then state
+                else Map.empty
+            | Variable var_name, Constant c ->
+                let left_val = this.eval_expr l state
+                match left_val with
+                | Positive -> state
+                | Zero                    
+                | Negative when c >= 0 -> Map.empty
+                | Zero
+                | Negative when c < 0 -> state
+                | Top ->
+                    if c >= 0 then state.Add(var_name, Positive)
+                    else state.Add(var_name, Top)
+                | _ -> state
+            | Constant c, Variable var_name ->
+                let right_val = this.eval_expr r state
+                match right_val with
+                | Positive ->
+                    if c <> 0 then Map.empty
+                    else state
+                | Zero ->
+                    if c >= 0 then Map.empty
+                    else state
+                | Top ->
+                    if c >= 0 then state.Add(var_name, Negative)
+                    else state
+                //| Negative -> state
+                | _ -> state
+            | Variable left_var_name, Variable right_var_name ->
+                let left_val = this.eval_expr l state
+                let right_val = this.eval_expr r state
+
+                match left_val, right_val with
+                (*| Positive, _ 
+                | _, Negative
+                | Zero, Top 
+                | Top, Negative
+                | Top, Top -> state*)
+                | Zero, Positive
+                | Zero, Zero 
+                | Negative, Positive
+                | Negative, Zero -> Map.empty
+                | Negative, Top -> state.Add(right_var_name, Negative)
+                | Top, Positive
+                | Top, Zero -> state.Add(left_var_name, Positive)
+                | _ -> state
