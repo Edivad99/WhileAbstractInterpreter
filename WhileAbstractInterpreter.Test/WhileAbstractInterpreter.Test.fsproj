@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="TestSignDomain.fs" />
     <Compile Include="TestIntervalDomain.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -161,4 +161,202 @@ type SignDomain() =
         | _ -> state.Add(var_name, value)
 
     override this.eval_abstr_cond expr state =
-        failwithf "Not implemented yet"
+        match expr with
+        | Boolean true -> state
+        | Boolean false -> Map.empty
+
+        | BinOp (l, "<", r) -> this.eval_abstr_cond (BinOp (r, ">", l)) state
+        | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (r, "<=", l)) state
+
+        | BinOp (l, "<=", r) ->
+            match l, r with
+            | Constant a, Constant b -> if a <= b then state else Map.empty
+            | Variable var_name, Constant c ->
+                let left_val = this.eval_expr l state 
+                match left_val with
+                | Positive
+                | Zero ->
+                    if c = 0 then state.Add(var_name, Zero)
+                    elif c < 0 then Map.empty
+                    else state
+                | Negative
+                | Top when c <= 0 -> state.Add(var_name, Negative)
+                | Negative when c > 0 -> state
+                | Top when c > 0 -> state.Add(var_name, Top)
+                | _ -> state // Bottom
+            | Constant c, Variable var_name ->
+                let right_val = this.eval_expr r state 
+                match right_val with
+                | Positive -> state
+                | Zero -> if c <= 0 then state else Map.empty
+                | Negative -> if c <= 0 then state else Map.empty
+                | Top -> state.Add(var_name, Positive)
+                | _ -> state
+            | Variable left_var_name, Variable right_var_name -> 
+                let left_val = this.eval_expr l state
+                let right_val = this.eval_expr r state
+
+                match left_val with
+                | Positive -> 
+                    match right_val with
+                    | Zero -> state.Add(left_var_name, Zero)
+                    | Negative ->
+                        state.Add(left_var_name, Zero)
+                             .Add(right_var_name, Zero)
+                    | Top -> state.Add(right_var_name, Positive)
+                    | _ -> state
+                | Zero -> 
+                    match right_val with
+                    | Negative -> state.Add(right_var_name, Zero)
+                    | Top -> state.Add(right_var_name, Positive)
+                    | _ -> state
+                | Top -> 
+                    match right_val with
+                    | Zero
+                    | Negative -> state.Add(left_var_name, Negative)
+                    | _ -> state
+                //| Negative -> state
+                | _ -> state
+            | _ -> state
+
+        | BinOp(l, ">", r) -> 
+            match l, r with
+            | Constant a, Constant b ->
+                if a > b then state
+                else Map.empty
+            | Variable var_name, Constant c ->
+                let left_val = this.eval_expr l state
+                match left_val with
+                | Positive -> state
+                | Zero                    
+                | Negative when c >= 0 -> Map.empty
+                | Zero
+                | Negative when c < 0 -> state
+                | Top ->
+                    if c >= 0 then state.Add(var_name, Positive)
+                    else state.Add(var_name, Top)
+                | _ -> state
+            | Constant c, Variable var_name ->
+                let right_val = this.eval_expr r state
+                match right_val with
+                | Positive ->
+                    if c <> 0 then Map.empty
+                    else state
+                | Zero ->
+                    if c >= 0 then Map.empty
+                    else state
+                | Top ->
+                    if c <= 0 then state.Add(var_name, Negative)
+                    else state
+                //| Negative -> state
+                | _ -> state
+            | Variable left_var_name, Variable right_var_name ->
+                let left_val = this.eval_expr l state
+                let right_val = this.eval_expr r state
+
+                match left_val, right_val with
+                (*| Positive, _ 
+                | _, Negative
+                | Zero, Top 
+                | Top, Negative
+                | Top, Top -> state*)
+                | Zero, Positive
+                | Zero, Zero 
+                | Negative, Positive
+                | Negative, Zero -> Map.empty
+                | Negative, Top -> state.Add(right_var_name, Negative)
+                | Top, Positive
+                | Top, Zero -> state.Add(left_var_name, Positive)
+                | _ -> state
+            | _ -> state
+        
+        | BinOp(l, "=", r) -> 
+            match l, r with
+            | Constant a, Constant b -> if a = b then state else Map.empty
+            | Variable var_name, Constant c
+            | Constant c, Variable var_name ->
+                let new_val = this.eval_expr (Variable var_name) state
+                match new_val with
+                | Positive ->
+                    if c = 0 then state.Add(var_name, Zero)
+                    elif c > 0 then state
+                    else Map.empty
+                | Zero -> if c = 0 then state else Map.empty
+                | Negative -> 
+                    if c = 0 then state.Add(var_name, Zero)
+                    elif c < 0 then state
+                    else Map.empty
+                | Top -> 
+                    if c = 0 then state.Add(var_name, Zero)
+                    elif c > 0 then state.Add(var_name, Positive)
+                    else state.Add(var_name, Negative)
+                | _ -> state
+            | Variable left_var_name, Variable right_var_name -> 
+                let left_val = this.eval_expr l state
+                let right_val = this.eval_expr r state
+
+                match left_val, right_val with
+                | Positive, Positive
+                | Zero, Zero
+                | Negative, Negative
+                | Top, Top -> state
+                | Zero, _ -> state.Add(left_var_name, Zero)
+                | _, Zero -> state.Add(right_var_name, Zero)
+                | Positive, Negative
+                | Negative, Positive -> 
+                    state.Add(left_var_name, Zero)
+                         .Add(right_var_name, Zero)
+                | Positive, Top -> state.Add(right_var_name, Positive)
+                | Negative, Top -> state.Add(right_var_name, Negative)
+                | Top, Positive -> state.Add(left_var_name, Positive)
+                | Top, Negative -> state.Add(left_var_name, Negative)
+                | _ -> state
+            | _ -> state
+
+        | BinOp(l, "!=", r) -> 
+            match l, r with
+            | Constant a, Constant b -> if a <> b then state else Map.empty
+            | Variable var_name, Constant c
+            | Constant c, Variable var_name -> 
+                let new_val = this.eval_expr (Variable var_name) state
+                match new_val with
+                | Positive when c > 0 -> state.Add(var_name, Top)
+                | Negative when c < 0 -> state.Add(var_name, Top)
+                | Zero when c = 0 -> Map.empty
+                | Top -> 
+                    if c = 0 then state
+                    elif c < 0 then state.Add(var_name, Positive)
+                    else state.Add(var_name, Negative)
+                | _ -> state
+            | Variable left_var_name, Variable right_var_name ->
+                let left_val = this.eval_expr l state
+                let right_val = this.eval_expr r state
+
+                match left_val, right_val with
+                | Positive, Positive
+                | Zero, Zero
+                | Negative, Negative
+                | Top, Top -> Map.empty
+                | Positive, Top -> state.Add(right_var_name, Negative)
+                | Negative, Top -> state.Add(right_var_name, Positive)
+                | Top, Positive -> state.Add(left_var_name, Negative)
+                | Top, Negative -> state.Add(left_var_name, Positive)
+                | _ -> state
+            | _ -> state
+
+        | UnOp("!", expr) ->
+            match expr with
+                | Boolean true -> Map.empty
+                | Boolean false -> state
+                | BinOp (l, "<", r) -> this.eval_abstr_cond (BinOp (l, ">=", r)) state
+                | BinOp (l, "<=", r) -> this.eval_abstr_cond (BinOp (l, ">", r)) state
+                | BinOp (l, ">", r) -> this.eval_abstr_cond (BinOp (l, "<=", r)) state
+                | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (l, "<", r)) state
+
+                | BinOp (l, "=", r) -> this.eval_abstr_cond (BinOp (l, "!=", r)) state
+                | BinOp (l, "!=", r) -> this.eval_abstr_cond (BinOp (l, "=", r)) state
+
+
+                | UnOp ("!", expr) -> this.eval_abstr_cond expr state
+
+                | _ -> state
