@@ -131,6 +131,7 @@ type SignDomain() =
             if value = 0 then Zero
             elif value > 0 then Positive
             else Negative
+        | Random -> Top
         | Variable var_name ->
             match state.TryFind var_name with
             | Some v -> v
@@ -244,7 +245,7 @@ type SignDomain() =
                     if c >= 0 then Map.empty
                     else state
                 | Top ->
-                    if c >= 0 then state.Add(var_name, Negative)
+                    if c <= 0 then state.Add(var_name, Negative)
                     else state
                 //| Negative -> state
                 | _ -> state
