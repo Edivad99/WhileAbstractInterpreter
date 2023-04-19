@@ -120,11 +120,35 @@ type SignDomain() =
 
         | _ -> Top
 
-    override _.widening x y = failwithf "Not implemented yet"
+    override _.widening x y =
+        // No actual widening is used in the sign domain
+        y
 
-    override _.narrowing x y = failwithf "Not implemented yet"
+    override _.narrowing x y =
+        match x, y with
+        | Positive, Positive -> Positive
+        | Negative, Negative -> Negative
+        | Zero, Zero -> Zero
+        | _, Bottom
+        | Bottom, _ -> Bottom
+        | _ -> Top
 
-    override _.intersect x y = failwithf "Not implemented yet"
+    override _.intersect x y =
+        match x, y with
+        | _, Bottom
+        | Bottom, _ -> Bottom
+
+        | Zero, _
+        | _, Zero -> Zero
+
+        | Top, _ -> y
+        | _, Top -> x
+
+        | Positive, Positive -> Positive
+        | Negative, Negative -> Negative
+
+        | Positive, Negative
+        | Negative, Positive -> Zero
 
     member this.eval_expr expr (state: Map<string, Sign>) =
         match expr with
@@ -172,7 +196,7 @@ type SignDomain() =
             match l, r with
             | Constant a, Constant b -> if a <= b then state else Map.empty
             | Variable var_name, Constant c ->
-                let left_val = this.eval_expr l state 
+                let left_val = this.eval_expr l state
                 match left_val with
                 | Positive
                 | Zero ->
@@ -185,19 +209,19 @@ type SignDomain() =
                 | Top when c > 0 -> state.Add(var_name, Top)
                 | _ -> state // Bottom
             | Constant c, Variable var_name ->
-                let right_val = this.eval_expr r state 
+                let right_val = this.eval_expr r state
                 match right_val with
                 | Positive -> state
                 | Zero -> if c <= 0 then state else Map.empty
                 | Negative -> if c <= 0 then state else Map.empty
-                | Top -> state.Add(var_name, Positive)
+                | Top -> state.Add(var_name, if c < 0 then Top else Positive)
                 | _ -> state
-            | Variable left_var_name, Variable right_var_name -> 
+            | Variable left_var_name, Variable right_var_name ->
                 let left_val = this.eval_expr l state
                 let right_val = this.eval_expr r state
 
                 match left_val with
-                | Positive -> 
+                | Positive ->
                     match right_val with
                     | Zero -> state.Add(left_var_name, Zero)
                     | Negative ->
@@ -219,7 +243,7 @@ type SignDomain() =
                 | _ -> state
             | _ -> state
 
-        | BinOp(l, ">", r) -> 
+        | BinOp(l, ">", r) ->
             match l, r with
             | Constant a, Constant b ->
                 if a > b then state
@@ -228,7 +252,7 @@ type SignDomain() =
                 let left_val = this.eval_expr l state
                 match left_val with
                 | Positive -> state
-                | Zero                    
+                | Zero
                 | Negative when c >= 0 -> Map.empty
                 | Zero
                 | Negative when c < 0 -> state
@@ -268,7 +292,7 @@ type SignDomain() =
                 | _ -> state
             | _ -> state
         
-        | BinOp(l, "=", r) -> 
+        | BinOp(l, "=", r) ->
             match l, r with
             | Constant a, Constant b -> if a = b then state else Map.empty
             | Variable var_name, Constant c
@@ -280,16 +304,16 @@ type SignDomain() =
                     elif c > 0 then state
                     else Map.empty
                 | Zero -> if c = 0 then state else Map.empty
-                | Negative -> 
+                | Negative ->
                     if c = 0 then state.Add(var_name, Zero)
                     elif c < 0 then state
                     else Map.empty
-                | Top -> 
+                | Top ->
                     if c = 0 then state.Add(var_name, Zero)
                     elif c > 0 then state.Add(var_name, Positive)
                     else state.Add(var_name, Negative)
                 | _ -> state
-            | Variable left_var_name, Variable right_var_name -> 
+            | Variable left_var_name, Variable right_var_name ->
                 let left_val = this.eval_expr l state
                 let right_val = this.eval_expr r state
 
@@ -301,7 +325,7 @@ type SignDomain() =
                 | Zero, _ -> state.Add(left_var_name, Zero)
                 | _, Zero -> state.Add(right_var_name, Zero)
                 | Positive, Negative
-                | Negative, Positive -> 
+                | Negative, Positive ->
                     state.Add(left_var_name, Zero)
                          .Add(right_var_name, Zero)
                 | Positive, Top -> state.Add(right_var_name, Positive)
@@ -311,17 +335,17 @@ type SignDomain() =
                 | _ -> state
             | _ -> state
 
-        | BinOp(l, "!=", r) -> 
+        | BinOp(l, "!=", r) ->
             match l, r with
             | Constant a, Constant b -> if a <> b then state else Map.empty
             | Variable var_name, Constant c
-            | Constant c, Variable var_name -> 
+            | Constant c, Variable var_name ->
                 let new_val = this.eval_expr (Variable var_name) state
                 match new_val with
                 | Positive when c > 0 -> state.Add(var_name, Top)
                 | Negative when c < 0 -> state.Add(var_name, Top)
                 | Zero when c = 0 -> Map.empty
-                | Top -> 
+                | Top ->
                     if c = 0 then state
                     elif c < 0 then state.Add(var_name, Positive)
                     else state.Add(var_name, Negative)
@@ -342,20 +366,35 @@ type SignDomain() =
                 | _ -> state
             | _ -> state
 
+        | BinOp (l, "&&", r) ->
+            let left_val = this.eval_abstr_cond l state
+            let right_val = this.eval_abstr_cond r state
+            this.point_wise_intersection left_val right_val
+
+        | BinOp (l, "||", r) ->
+            let left_val = this.eval_abstr_cond l state
+            let right_val = this.eval_abstr_cond r state
+            this.point_wise_union left_val right_val
+
         | UnOp("!", expr) ->
             match expr with
-                | Boolean true -> Map.empty
-                | Boolean false -> state
-                | BinOp (l, "<", r) -> this.eval_abstr_cond (BinOp (l, ">=", r)) state
-                | BinOp (l, "<=", r) -> this.eval_abstr_cond (BinOp (l, ">", r)) state
-                | BinOp (l, ">", r) -> this.eval_abstr_cond (BinOp (l, "<=", r)) state
-                | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (l, "<", r)) state
+            | Boolean true -> Map.empty
+            | Boolean false -> state
+            | BinOp (l, "<", r) -> this.eval_abstr_cond (BinOp (l, ">=", r)) state
+            | BinOp (l, "<=", r) -> this.eval_abstr_cond (BinOp (l, ">", r)) state
+            | BinOp (l, ">", r) -> this.eval_abstr_cond (BinOp (l, "<=", r)) state
+            | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (l, "<", r)) state
 
-                | BinOp (l, "=", r) -> this.eval_abstr_cond (BinOp (l, "!=", r)) state
-                | BinOp (l, "!=", r) -> this.eval_abstr_cond (BinOp (l, "=", r)) state
+            | BinOp (l, "=", r) -> this.eval_abstr_cond (BinOp (l, "!=", r)) state
+            | BinOp (l, "!=", r) -> this.eval_abstr_cond (BinOp (l, "=", r)) state
 
+            | BinOp (l, ("&&" | "||" as op), r) ->
+                let not_l = UnOp("!", l)
+                let not_r = UnOp("!", r)
+                let opposite = if op = "||" then "&&" else "||"
+                this.eval_abstr_cond (BinOp (not_l, opposite, not_r)) state
 
-                | UnOp ("!", expr) -> this.eval_abstr_cond expr state
+            | UnOp ("!", expr) -> this.eval_abstr_cond expr state
 
-                | _ -> state
+            | _ -> state
         | _ -> state

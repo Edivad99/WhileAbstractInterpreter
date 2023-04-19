@@ -309,7 +309,7 @@ type IntervalDomain() =
                 if b < c then Map.empty
                 elif d < a then Map.empty
                 else
-                    let new_value = Range(max a c, min b d)
+                    let new_value = this.intersect left_val right_val
                     match l, r with
                     | Variable left_var_name, Variable right_var_name ->
                         state.Add(left_var_name, new_value).Add(right_var_name, new_value)
