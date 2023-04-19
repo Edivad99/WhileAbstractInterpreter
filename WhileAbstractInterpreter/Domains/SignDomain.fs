@@ -239,11 +239,9 @@ type SignDomain() =
             | Constant c, Variable var_name ->
                 let right_val = this.eval_expr r state
                 match right_val with
-                | Positive ->
-                    if c <> 0 then Map.empty
-                    else state
+                | Positive
                 | Zero ->
-                    if c >= 0 then Map.empty
+                    if c <= 0 then Map.empty
                     else state
                 | Top ->
                     if c <= 0 then state.Add(var_name, Negative)
@@ -360,3 +358,4 @@ type SignDomain() =
                 | UnOp ("!", expr) -> this.eval_abstr_cond expr state
 
                 | _ -> state
+        | _ -> state
