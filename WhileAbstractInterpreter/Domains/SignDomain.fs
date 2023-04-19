@@ -186,12 +186,6 @@ type SignDomain() =
 
     override this.eval_abstr_cond expr state =
         match expr with
-        | Boolean true -> state
-        | Boolean false -> Map.empty
-
-        | BinOp (l, "<", r) -> this.eval_abstr_cond (BinOp (r, ">", l)) state
-        | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (r, "<=", l)) state
-
         | BinOp (l, "<=", r) ->
             match l, r with
             | Constant a, Constant b -> if a <= b then state else Map.empty
@@ -366,35 +360,4 @@ type SignDomain() =
                 | _ -> state
             | _ -> state
 
-        | BinOp (l, "&&", r) ->
-            let left_val = this.eval_abstr_cond l state
-            let right_val = this.eval_abstr_cond r state
-            this.point_wise_intersection left_val right_val
-
-        | BinOp (l, "||", r) ->
-            let left_val = this.eval_abstr_cond l state
-            let right_val = this.eval_abstr_cond r state
-            this.point_wise_union left_val right_val
-
-        | UnOp("!", expr) ->
-            match expr with
-            | Boolean true -> Map.empty
-            | Boolean false -> state
-            | BinOp (l, "<", r) -> this.eval_abstr_cond (BinOp (l, ">=", r)) state
-            | BinOp (l, "<=", r) -> this.eval_abstr_cond (BinOp (l, ">", r)) state
-            | BinOp (l, ">", r) -> this.eval_abstr_cond (BinOp (l, "<=", r)) state
-            | BinOp (l, ">=", r) -> this.eval_abstr_cond (BinOp (l, "<", r)) state
-
-            | BinOp (l, "=", r) -> this.eval_abstr_cond (BinOp (l, "!=", r)) state
-            | BinOp (l, "!=", r) -> this.eval_abstr_cond (BinOp (l, "=", r)) state
-
-            | BinOp (l, ("&&" | "||" as op), r) ->
-                let not_l = UnOp("!", l)
-                let not_r = UnOp("!", r)
-                let opposite = if op = "||" then "&&" else "||"
-                this.eval_abstr_cond (BinOp (not_l, opposite, not_r)) state
-
-            | UnOp ("!", expr) -> this.eval_abstr_cond expr state
-
-            | _ -> state
-        | _ -> state
+        | _ -> this.eval_generic_abstr_cond expr state
