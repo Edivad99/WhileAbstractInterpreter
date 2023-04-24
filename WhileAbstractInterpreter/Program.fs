@@ -1,6 +1,7 @@
 ﻿module Program
 
 open System
+open System.Diagnostics
 open System.IO
 open System.Reflection
 open FSharp.Text.Lexing
@@ -22,25 +23,28 @@ let read_file filename =
 [<EntryPoint>]
 let main args =
     let input = """
-        x := -1;
-        if x > random then {
-            x := 10
-        } else {
-            x := -10
-        }
+x := [-40; 40];
+if x >= -10 && x < 10 then {
+    skip;
+} else {
+    skip;
+}
     """
     //let input = read_file "if.wl"
 
     let program = evaluate input
     Console.WriteLine(program)
 
-    let interval_domain = IntervalDomain()
-    let sign_domain = SignDomain()
+    //let domain = IntervalDomain()
+    let domain = SignDomain()
 
-    let abstract_state = AbstractState<_>(sign_domain)
+    let abstract_state = AbstractState<_>(domain)
+
+    let start = Stopwatch.GetTimestamp()
     let result, program_points = abstract_state.eval program
+    let delta = Stopwatch.GetElapsedTime start
 
-    Console.WriteLine($"Result: {result}")
-    Report.generate_report input program_points
+    //Console.WriteLine($"Result: {result}")
+    Report.generate_report input program_points delta
     //Console.ReadKey() |> ignore
     0

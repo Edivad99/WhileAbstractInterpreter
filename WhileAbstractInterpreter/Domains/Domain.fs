@@ -2,7 +2,7 @@
 open Ast
 
 [<AbstractClass>]
-type Domain<'T when 'T: comparison>() =
+type Domain<'T when 'T: equality>() =
 
     // Definisce lo stato iniziale delle variabili
     abstract default_var_state: 'T
@@ -22,13 +22,13 @@ type Domain<'T when 'T: comparison>() =
         | None -> Map.add key value acc
 
     member this.point_wise_union (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        Map.fold (fun acc key value -> this.resolve_conflicts this.union acc key value) s1 s2
+        Map.fold (this.resolve_conflicts this.union) s1 s2
 
     member this.point_wise_widening (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        Map.fold (fun acc key value -> this.resolve_conflicts this.widening acc key value) s1 s2
+        Map.fold (this.resolve_conflicts this.widening) s1 s2
 
     member this.point_wise_narrowing (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
-        Map.fold (fun acc key value -> this.resolve_conflicts this.narrowing acc key value) s1 s2
+        Map.fold (this.resolve_conflicts this.narrowing) s1 s2
 
     member this.point_wise_intersection (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
         Map (
@@ -52,8 +52,9 @@ type Domain<'T when 'T: comparison>() =
                 Set.union (find_variable stm_1) (find_variable stm_2)
 
         find_variable program
-        |> Set.map (fun x -> (x, this.default_var_state))
-        |> Map.ofSeq
+        |> Set.toList
+        |> List.map (fun x -> (x, this.default_var_state))
+        |> Map.ofList
 
     member this.eval_generic_abstr_cond expr state =
         match expr with

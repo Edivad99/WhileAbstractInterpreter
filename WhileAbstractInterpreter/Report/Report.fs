@@ -18,6 +18,7 @@ let private source =
         <h3 class="display-3">While Static Analyzer</h3>
         <strong class="text-body-secondary">Davide Albiero, Damiano Mason</strong>
         <br>
+        <small>Analyzed in: {{delta}} ms</small><br>
         <small>Generated at: {{time}}</small>
         <h5 style="margin-top: 50px;" class="text-primary">Input code:</h5>
         <pre>{{{code}}}</pre>
@@ -50,7 +51,7 @@ let private pretty_points points =
 
 let private format_code (code: string, program_points: Map<string, 'a> list) =
     let formatted_code = code.Split '\n'
-                        |> Array.map (fun x -> x.Replace ("        ", ""))
+                        //|> Array.map (fun x -> x.Replace ("        ", ""))
                         |> Array.filter (fun x -> not (String.IsNullOrWhiteSpace x))
                         //|> Array.filter (fun x -> not (x.StartsWith("//")))
                         |> List.ofArray
@@ -63,8 +64,10 @@ let private format_code (code: string, program_points: Map<string, 'a> list) =
     interleave (formatted_program_points, formatted_code)
     |> String.concat("\n")
 
-let generate_report code program_points =
-    let data = {|code = format_code(code, program_points); time = DateTime.Now.ToString();|}
+let generate_report code program_points (delta: TimeSpan) =
+    let data = {|code = format_code(code, program_points);
+                time = DateTime.Now.ToString();
+                delta = delta.Milliseconds|}
     let result = template.Invoke(data)
 
     let executableLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
