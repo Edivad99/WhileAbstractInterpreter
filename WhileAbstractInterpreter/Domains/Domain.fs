@@ -5,12 +5,13 @@ open Ast
 type Domain<'T when 'T: equality>() =
 
     // Definisce lo stato iniziale delle variabili
-    abstract default_var_state: 'T
+    abstract default_var_state: int -> int -> 'T
     abstract eval_var_dec: string -> Expr -> Map<string, 'T> -> Map<string, 'T>
     abstract eval_abstr_cond: Expr -> Map<string, 'T> -> Map<string, 'T>
 
     // Union: Slide 62/100 parte 2
     abstract union: 'T -> 'T -> 'T
+    abstract point_wise_union: Map<string, 'T> -> Map<string, 'T> -> Map<string, 'T>
     abstract intersect: 'T -> 'T -> 'T
 
     abstract widening: 'T -> 'T -> 'T
@@ -21,7 +22,7 @@ type Domain<'T when 'T: equality>() =
         | Some v -> Map.add key (f v value) acc
         | None -> Map.add key value acc
 
-    member this.point_wise_union (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
+    default this.point_wise_union (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
         Map.fold (this.resolve_conflicts this.union) s1 s2
 
     member this.point_wise_widening (s1: Map<string, 'T>) (s2: Map<string, 'T>) =
@@ -51,9 +52,10 @@ type Domain<'T when 'T: equality>() =
             | Seq (stm_1, stm_2) ->
                 Set.union (find_variable stm_1) (find_variable stm_2)
 
-        find_variable program
-        |> Set.toList
-        |> List.map (fun x -> (x, this.default_var_state))
+        let variables = find_variable program |> Set.toList
+        let size = variables.Length
+        variables
+        |> List.mapi(fun i x -> (x, this.default_var_state i size))
         |> Map.ofList
 
     member this.eval_generic_abstr_cond expr state =

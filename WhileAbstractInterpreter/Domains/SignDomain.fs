@@ -101,7 +101,7 @@ type Sign =
 type SignDomain() =
     inherit Domain<Sign>()
 
-    override _.default_var_state = Top
+    override _.default_var_state _ _ = Top
 
     override _.union x y =
         match x, y with
@@ -150,7 +150,7 @@ type SignDomain() =
         | Positive, Negative
         | Negative, Positive -> Zero
 
-    member this.eval_expr expr (state: Map<string, Sign>) =
+    member private this.eval_expr expr (state: Map<string, Sign>) =
         match expr with
         | Constant value ->
             if value = 0 then Zero

@@ -23,6 +23,7 @@
 		<Compile Include="Domains\Domain.fs" />
 		<Compile Include="Domains\IntervalDomain.fs" />
 		<Compile Include="Domains\SignDomain.fs" />
+		<Compile Include="Domains\LinearEqualityDomain.fs" />
 		<Compile Include="AbstractState.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>
@@ -32,6 +33,10 @@
 			</GeneratePathProperty>
 		</PackageReference>
 		<PackageReference Include="Handlebars.Net" Version="2.1.4">
+			<GeneratePathProperty>
+			</GeneratePathProperty>
+		</PackageReference>
+		<PackageReference Include="MathNet.Numerics.FSharp" Version="5.0.0">
 			<GeneratePathProperty>
 			</GeneratePathProperty>
 		</PackageReference>

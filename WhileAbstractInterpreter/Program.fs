@@ -5,8 +5,10 @@ open System.Diagnostics
 open System.IO
 open System.Reflection
 open FSharp.Text.Lexing
+open MathNet.Numerics.LinearAlgebra
 open IntervalDomain
 open SignDomain
+open LinearEqualityDomain
 open Domain
 open AbstractState
 
@@ -23,11 +25,11 @@ let read_file filename =
 [<EntryPoint>]
 let main args =
     let input = """
-x := [-40; 40];
-if x >= -10 && x < 10 then {
-    skip;
-} else {
-    skip;
+x := 10;
+y := 100;
+while x != 0 do {
+    x := x - 1;
+    y := y + 10;
 }
     """
     //let input = read_file "if.wl"
@@ -36,7 +38,8 @@ if x >= -10 && x < 10 then {
     Console.WriteLine(program)
 
     //let domain = IntervalDomain()
-    let domain = SignDomain()
+    //let domain = SignDomain()
+    let domain = LinearEqualityDomain()
 
     let abstract_state = AbstractState<_>(domain)
 

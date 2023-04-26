@@ -148,7 +148,7 @@ type Interval =
 type IntervalDomain() =
     inherit Domain<Interval>()
 
-    override _.default_var_state = Range(MinusInf, PlusInf)
+    override _.default_var_state _ _= Range(MinusInf, PlusInf)
 
     override _.union x y = Interval.union x y
 
@@ -184,7 +184,7 @@ type IntervalDomain() =
             if lower <= higher then Range(lower, higher) else Bottom
         | _ -> Bottom
 
-    member this.eval_expr expr (state: Map<string, Interval>) =
+    member private this.eval_expr expr (state: Map<string, Interval>) =
         match expr with
         | Constant value -> Range(Num value, Num value)
         | Random -> Range(MinusInf, PlusInf)
