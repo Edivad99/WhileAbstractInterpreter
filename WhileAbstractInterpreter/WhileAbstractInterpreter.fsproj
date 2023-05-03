@@ -23,6 +23,7 @@
 		<Compile Include="Domains\Domain.fs" />
 		<Compile Include="Domains\IntervalDomain.fs" />
 		<Compile Include="Domains\SignDomain.fs" />
+		<Compile Include="Domains\CongruenceDomain.fs" />
 		<Compile Include="AbstractState.fs" />
 		<Compile Include="Program.fs" />
 	</ItemGroup>

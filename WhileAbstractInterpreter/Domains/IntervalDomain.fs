@@ -184,12 +184,12 @@ type IntervalDomain() =
             if lower <= higher then Range(lower, higher) else Bottom
         | _ -> Bottom
 
-    member this.eval_expr expr (state: Map<string, Interval>) =
+    member private this.eval_expr expr state =
         match expr with
         | Constant value -> Range(Num value, Num value)
         | Random -> Range(MinusInf, PlusInf)
         | Variable var_name ->
-            match state.TryFind var_name with
+            match Map.tryFind var_name state with
             | Some v -> v
             | None -> Bottom
         | UnOp ("-", expr) ->
