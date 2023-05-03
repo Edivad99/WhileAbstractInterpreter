@@ -6,38 +6,38 @@ open Ast
 open Domain
 
 type LinearEquality =
-    | Bottom
-    | Constraint of int
+    | Bottom         // M               C
+    | Constraint of Matrix<double> * Vector<double>
 
     with
         static member ( ~- ) x =
             match x with
-            | Constraint n -> Constraint -n
+            | Constraint (m, c) -> Constraint (m.Multiply(-1.0), c.Multiply(-1.0))
             | Bottom -> Bottom
 
         static member ( + ) (x, y) =
             match x, y with
-            | Constraint a, Constraint b -> Constraint (a + b)
+            | Constraint (m_a, c_a), Constraint (m_b, c_b) -> Constraint (m_a + m_b, c_a + c_b)
             | _ -> Bottom
 
         static member ( - ) (x, y) =
             match x, y with
-            | Constraint a, Constraint b -> Constraint (a - b)
+            | Constraint (m_a, c_a), Constraint (m_b, c_b) -> Constraint (m_a - m_b, c_a - c_b)
             | _ -> Bottom
 
         static member ( * ) (x, y) =
             match x, y with
-            | Constraint a, Constraint b -> Constraint (a * b)
+            | Constraint (m_a, c_a), Constraint (m_b, c_b) -> Constraint (m_a .* m_b, c_a .* c_b)
             | _ -> Bottom
 
         static member ( / ) (x, y) =
             match x, y with
-            | Constraint a, Constraint b -> Constraint (a / b)
+            | Constraint (m_a, c_a), Constraint (m_b, c_b) -> Constraint (m_a ./ m_b, c_a ./ c_b)
             | _ -> Bottom
 
         override this.ToString() =
             match this with
-            | Constraint n -> n.ToString()
+            | Constraint (m, c) -> "(" + m.ToMatrixString() + "|" + c.ToVectorString() + ")"
             | Bottom -> "\u22A5"
 
 let private V = Vector<double>.Build;
@@ -48,19 +48,20 @@ type LinearEqualityDomain() =
     inherit Domain<LinearEquality>()
 
     override this.default_var_state index count =
-        //let init = V.Dense(count, fun i -> if i = index then 1.0 else 0.0)
-        Constraint 0
+        let M = M.DenseIdentity count
+        let V = V.Dense (count, 0.0)
+        Constraint (M, V)
 
     override this.point_wise_union s1 s2 =
         let coeff = M.DenseIdentity(s1.Count)
-        let s1_value =
+        (*let s1_value =
             s1
             |> Map.toArray
             |> Array.map (fun (_, value) -> value)
             |> Array.map (fun x -> match x with
                                    | Constraint x -> Convert.ToDouble x
                                    | Bottom -> Bottom)
-            |> V.DenseOfArray
+            |> V.DenseOfArray*)
         s2
 
     override this.union x y =
@@ -75,14 +76,14 @@ type LinearEqualityDomain() =
 
     override this.intersect x y = failwithf "todo"
 
-    member this.eval_expr expr (state: Map<string, LinearEquality>) =
+    member this.eval_expr expr (state: LinearEquality) =
         match expr with
-        | Constant value -> Constraint value
-        | Random -> Constraint (System.Random().Next())
-        | Variable var_name ->
+        //| Constant value -> Constraint value
+        //| Random -> Constraint (System.Random().Next())
+        (*| Variable var_name ->
             match state.TryFind var_name with
             | Some v -> v
-            | None -> Bottom
+            | None -> Bottom*)
         | UnOp ("-", expr) -> -this.eval_expr expr state
         | BinOp (l, ("+" | "-" | "*" | "/" as op), r) ->
             let left_val = this.eval_expr l state
@@ -96,13 +97,15 @@ type LinearEqualityDomain() =
         | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =
-        let value = this.eval_expr expr state
+        failwithf "todo"
+        (*let value = this.eval_expr expr state
         match value with
         | Constraint _ -> state.Add(var_name, value)
-        | Bottom -> Map.empty
+        | Bottom -> Map.empty*)
 
     override this.eval_abstr_cond expr state =
-        match expr with
+        failwithf "todo"
+        (*match expr with
         | BinOp (l, "<=", r) ->
             let left_val = this.eval_expr l state
             let right_val = this.eval_expr r state
@@ -139,5 +142,5 @@ type LinearEqualityDomain() =
                 if a <> b then state
                 else Map.empty
             | _ -> state
-
-        | _ -> this.eval_generic_abstr_cond expr state
+            
+        | _ -> this.eval_generic_abstr_cond expr state*)
