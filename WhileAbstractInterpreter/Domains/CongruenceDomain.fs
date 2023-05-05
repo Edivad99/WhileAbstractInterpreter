@@ -17,6 +17,11 @@ type Congruence =
             if b = 0 then a
             else Congruence.gcd b (a % b)
 
+        static member lcm a b =
+            match Congruence.gcd a b with
+            | 0 -> 0
+            | x -> a * b / x
+
         static member ( + ) (x, y) =
             match x, y with
             | Value (a, b), Value (a', b') -> Value (Congruence.gcd a a', b + b')
@@ -39,10 +44,10 @@ type Congruence =
 
         static member ( / ) (x, y) =
             match x, y with
+            | Value _, Value (0, 0) -> Bottom
             | Value (a, b), Value (a', b') ->
-                if y = Value(0, 0) then Bottom
-                elif a' = 0 && b' <> 0 && a % b' = 0 && b % b' = 0 then Value(a / (abs b'), b / b')
-                else Value (0, 0)
+                if a' = 0 && b' <> 0 && a % b' = 0 && b % b' = 0 then Value(a / (abs b'), b / b')
+                else Value (1, 0)
             | _ -> Bottom
 
         override this.ToString() =
@@ -53,15 +58,37 @@ type Congruence =
 type CongruenceDomain() =
     inherit Domain<Congruence>()
 
-    override this.default_var_state = Value(0, 0)
+    override _.default_var_state = Value(1, 0)
 
-    override this.union x y = failwith "todo"
+    override _.union x y =
+        match x, y with
+        | Value (a, b), Value (a', b') ->
+            let bb' = abs (b - b')
+            Value (Congruence.gcd (Congruence.gcd a a') bb', b)
+        | _ -> Bottom
 
-    override this.widening x y = failwith "todo"
+    override _.widening x y =
+        // No actual widening is used in the congruence domain
+        y
 
-    override this.narrowing x y = failwith "todo"
+    override _.narrowing x y =
+        match x, y with
+        | Value (a, _), Value (_, _) when a = 1 -> y
+        | _ -> x
 
-    override this.intersect x y = failwith "todo"
+    member private this.bezout a b =
+        match b with
+        | 0 -> (a, 1, 0)
+        | _ ->
+            let (d, x, y) = this.bezout b (a % b)
+            (d, y, x - (a / b) * y)
+
+    override this.intersect x y =
+        match x, y with
+        | Value (a, b), Value (a', b') when (Congruence.gcd a a') % abs (b - b') = 0 ->
+            let b'', _, _ = this.bezout b (Congruence.lcm a a')
+            Value (Congruence.lcm a a', b'')
+        | _ -> Bottom
 
     member private this.eval_expr expr state =
         match expr with
