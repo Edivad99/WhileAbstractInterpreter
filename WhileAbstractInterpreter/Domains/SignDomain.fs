@@ -173,8 +173,8 @@ type SignDomain() =
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
         | Range (a, b) ->
-            let left_val = this.eval_expr a state
-            let right_val = this.eval_expr b state
+            let left_val = this.eval_expr (Constant a) state
+            let right_val = this.eval_expr (Constant b) state
             this.union left_val right_val
         | _ -> failwithf "Not implemented yet"
 

@@ -35,7 +35,8 @@ statement
     : Var ASN arithmExpr                                    { VarDec ($1, $3) }
     | Var ASN RAND                                          { VarDec ($1, Random) }
     | SKIP                                                  { Skip }
-    | IF boolExpr THEN statement ELSE statement             { IfThenElse ($2, $4, $6) }
+    | IF boolExpr THEN statement ELSE statement             { IfThenElse ($2, $4, Some $6) }
+    | IF boolExpr THEN statement                            { IfThenElse ($2, $4, None) }
     | WHILE boolExpr DO statement                           { While ($2, $4) }
     | LCURLPAREN seqStatement RCURLPAREN                    { $2 }
 
@@ -48,7 +49,7 @@ arithmExpr
     | arithmExpr MULT arithmExpr                            { BinOp ($1, "*", $3) }
     | arithmExpr DIV arithmExpr                             { BinOp ($1, "/", $3) }
     | LPAREN arithmExpr RPAREN                              { $2 }
-    | LSQRPAREN arithmExpr SEMICOLON arithmExpr RSQRPAREN   { Range ($2, $4) }
+    | LSQRPAREN Number SEMICOLON Number RSQRPAREN           { Range ($2, $4) }
 
 boolExpr
     : TRUE                                                  { Boolean (true) }

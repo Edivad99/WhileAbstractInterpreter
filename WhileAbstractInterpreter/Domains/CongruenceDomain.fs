@@ -3,6 +3,16 @@
 open Ast
 open Domain
 
+
+let rec private gcd a b =
+    if b = 0 then a
+    else gcd b (a % b)
+
+let private lcm a b =
+    match gcd a b with
+    | 0 -> 0
+    | x -> a * b / x
+
 type Congruence =
     | Value of int * int
     | Bottom
@@ -13,23 +23,14 @@ type Congruence =
             | Value (a, b) -> Value(a, -b)
             | Bottom -> Bottom
 
-        static member gcd a b =
-            if b = 0 then a
-            else Congruence.gcd b (a % b)
-
-        static member lcm a b =
-            match Congruence.gcd a b with
-            | 0 -> 0
-            | x -> a * b / x
-
         static member ( + ) (x, y) =
             match x, y with
-            | Value (a, b), Value (a', b') -> Value (Congruence.gcd a a', b + b')
+            | Value (a, b), Value (a', b') -> Value (gcd a a', b + b')
             | _ -> Bottom
 
         static member ( - ) (x, y) =
             match x, y with
-            | Value (a, b), Value (a', b') -> Value (Congruence.gcd a a', b - b')
+            | Value (a, b), Value (a', b') -> Value (gcd a a', b - b')
             | _ -> Bottom
 
         static member ( * ) (x, y) =
@@ -39,7 +40,7 @@ type Congruence =
                 let ab' = a * b'
                 let a'b = a' * b
                 let bb' = b * b'
-                Value (Congruence.gcd (Congruence.gcd aa' ab') a'b, bb')
+                Value (gcd aa' ab' |> gcd a'b, bb')
             | _ -> Bottom
 
         static member ( / ) (x, y) =
@@ -52,7 +53,7 @@ type Congruence =
 
         override this.ToString() =
             match this with
-            | Value (a, b) -> $"{a}\u2124 + {b}"
+            | Value (a, b) -> $"{a}\u2124 + {b}" // $"{b} mod {a}"
             | Bottom -> "\u22A5"
 
 type CongruenceDomain() =
@@ -64,12 +65,10 @@ type CongruenceDomain() =
         match x, y with
         | Value (a, b), Value (a', b') ->
             let bb' = abs (b - b')
-            Value (Congruence.gcd (Congruence.gcd a a') bb', b)
+            Value (gcd a a' |> gcd bb', b)
         | _ -> Bottom
 
-    override _.widening x y =
-        // No actual widening is used in the congruence domain
-        y
+    override this.widening x y = this.union x y
 
     override _.narrowing x y =
         match x, y with
@@ -85,15 +84,15 @@ type CongruenceDomain() =
 
     override this.intersect x y =
         match x, y with
-        | Value (a, b), Value (a', b') when (Congruence.gcd a a') % abs (b - b') = 0 ->
-            let b'', _, _ = this.bezout b (Congruence.lcm a a')
-            Value (Congruence.lcm a a', b'')
+        | Value (a, b), Value (a', b') when (gcd a a') % abs (b - b') = 0 ->
+            let b'', _, _ = this.bezout b (lcm a a')
+            Value (lcm a a', b'')
         | _ -> Bottom
 
     member private this.eval_expr expr state =
         match expr with
-        | Constant value -> Value(value, 0)
-        | Random -> Value(System.Random().Next(), 0)
+        | Constant value -> Value(0, value)
+        | Random -> Value(0, System.Random().Next())
         | Variable var_name ->
             match Map.tryFind var_name state with
             | Some v -> v
@@ -109,6 +108,7 @@ type CongruenceDomain() =
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
+        | Range (a, b) -> if a = b then Value (0, a) else Value(1, 0)
         | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =
