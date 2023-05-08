@@ -25,7 +25,10 @@ type Congruence =
 
         static member ( + ) (x, y) =
             match x, y with
-            | Value (a, b), Value (a', b') -> Value (gcd a a', b + b')
+            | Value (a, b), Value (a', b') ->
+                match gcd a a' with
+                | 0 -> Value (0, b + b')
+                | a -> Value (a, (((b + b') % a) + a) % a)
             | _ -> Bottom
 
         static member ( - ) (x, y) =
@@ -33,8 +36,9 @@ type Congruence =
             | Value (a, b), Value (a', b') ->
                 //Value (gcd a a', b - b')
                 // Nuovo metodo che converte b in positivo
-                let a = gcd a a'
-                Value (a, (((b - b') % a) + a) % a)
+                match gcd a a' with
+                | 0 -> Value (0, b - b')
+                | a -> Value (a, (((b - b') % a) + a) % a)
             | _ -> Bottom
 
         static member ( * ) (x, y) =

@@ -54,7 +54,7 @@ type TestCongruenceDomain () =
             |> Map.add "y" (Value(6, 2))
         let post_body =
             Map.empty
-            |> Map.add "x" (Value(2, 2))
+            |> Map.add "x" (Value(2, 0))
             |> Map.add "y" (Value(6, 2))
         let resultExpected =
             Map.empty
