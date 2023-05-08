@@ -7,6 +7,7 @@ open System.Reflection
 open FSharp.Text.Lexing
 open IntervalDomain
 open SignDomain
+open CongruenceDomain
 open Domain
 open AbstractState
 
@@ -36,7 +37,9 @@ if x >= -10 && x < 10 then {
     Console.WriteLine(program)
 
     //let domain = IntervalDomain()
-    let domain = SignDomain()
+    //let domain = SignDomain()
+    let domain = CongruenceDomain()
+
 
     let abstract_state = AbstractState<_>(domain)
 

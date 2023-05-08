@@ -150,7 +150,7 @@ type SignDomain() =
         | Positive, Negative
         | Negative, Positive -> Zero
 
-    member this.eval_expr expr (state: Map<string, Sign>) =
+    member private this.eval_expr expr state =
         match expr with
         | Constant value ->
             if value = 0 then Zero
@@ -158,7 +158,7 @@ type SignDomain() =
             else Negative
         | Random -> Top
         | Variable var_name ->
-            match state.TryFind var_name with
+            match Map.tryFind var_name state with
             | Some v -> v
             | None -> Bottom
         | UnOp ("-", expr) ->
@@ -173,8 +173,8 @@ type SignDomain() =
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
         | Range (a, b) ->
-            let left_val = this.eval_expr a state
-            let right_val = this.eval_expr b state
+            let left_val = this.eval_expr (Constant a) state
+            let right_val = this.eval_expr (Constant b) state
             this.union left_val right_val
         | _ -> failwithf "Not implemented yet"
 

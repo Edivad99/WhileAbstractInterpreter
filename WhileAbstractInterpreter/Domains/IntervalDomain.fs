@@ -184,12 +184,12 @@ type IntervalDomain() =
             if lower <= higher then Range(lower, higher) else Bottom
         | _ -> Bottom
 
-    member this.eval_expr expr (state: Map<string, Interval>) =
+    member private this.eval_expr expr state =
         match expr with
         | Constant value -> Range(Num value, Num value)
         | Random -> Range(MinusInf, PlusInf)
         | Variable var_name ->
-            match state.TryFind var_name with
+            match Map.tryFind var_name state with
             | Some v -> v
             | None -> Bottom
         | UnOp ("-", expr) ->
@@ -203,12 +203,7 @@ type IntervalDomain() =
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
-        | Expr.Range (a, b) ->
-            let left_val = this.eval_expr a state
-            let right_val = this.eval_expr b state
-            match left_val, right_val with
-            | Range(a, b), Range (c, d) when a = b && c = d -> Range(a, c)
-            | _ -> failwithf "Unsupported values"
+        | Expr.Range (a, b) -> Range (Num a, Num b)
         | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =

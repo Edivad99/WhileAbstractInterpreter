@@ -45,7 +45,8 @@ type Domain<'T when 'T: equality>() =
             match program with
             | VarDec (name, _) -> Set.singleton name
             | Skip -> Set.empty
-            | IfThenElse (_, true_branch, false_branch) ->
+            | IfThenElse (_, true_branch, None) -> find_variable true_branch
+            | IfThenElse (_, true_branch, Some false_branch) ->
                 Set.union (find_variable true_branch) (find_variable false_branch)
             | While (_, block) -> find_variable block
             | Seq (stm_1, stm_2) ->

@@ -33,19 +33,28 @@ type AbstractState<'T when 'T: equality>(domain : Domain<'T>, ?widening_delay:in
                     if Map.isEmpty state_cond then (Map.empty, [Map.empty])
                     else this.eval (true_branch, state_cond, List.empty)
 
-                let state_else_cond = this.Domain.eval_abstr_cond (UnOp("!", cond)) state
+                match false_branch with
+                | Some false_branch ->
+                    let state_else_cond = this.Domain.eval_abstr_cond (UnOp("!", cond)) state
 
-                let s2, false_branch_points =
-                    if Map.isEmpty state_else_cond then (Map.empty, [Map.empty])
-                    else this.eval (false_branch, state_else_cond, List.empty)
+                    let s2, false_branch_points =
+                        if Map.isEmpty state_else_cond then (Map.empty, [Map.empty])
+                        else this.eval (false_branch, state_else_cond, List.empty)
 
-                // Fai il point wise union
-                let next = this.Domain.point_wise_union s1 s2
+                    // Fai il point wise union
+                    let next = this.Domain.point_wise_union s1 s2
 
-                (next, state_points
-                    @ [state_cond] @ true_branch_points
-                    @ [state_else_cond] @ false_branch_points
-                    @ [next])
+                    (next, state_points
+                        @ [state_cond] @ true_branch_points
+                        @ [state_else_cond] @ false_branch_points
+                        @ [next])
+                | None ->
+                    // Fai il point wise union
+                    let next = this.Domain.point_wise_union s1 state
+
+                    (next, state_points
+                        @ [state_cond] @ true_branch_points
+                        @ [next])
 
             | While (cond, expr) ->
                 let mutable prev_state = this.Domain.eval_abstr_cond cond state
