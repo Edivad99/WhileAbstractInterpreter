@@ -30,7 +30,11 @@ type Congruence =
 
         static member ( - ) (x, y) =
             match x, y with
-            | Value (a, b), Value (a', b') -> Value (gcd a a', b - b')
+            | Value (a, b), Value (a', b') ->
+                //Value (gcd a a', b - b')
+                // Nuovo metodo che converte b in positivo
+                let a = gcd a a'
+                Value (a, (((b - b') % a) + a) % a)
             | _ -> Bottom
 
         static member ( * ) (x, y) =
@@ -117,4 +121,45 @@ type CongruenceDomain() =
         | Value _ -> state.Add(var_name, value)
         | Bottom -> Map.empty
 
-    override this.eval_abstr_cond expr state = failwith "todo"
+    override this.eval_abstr_cond expr state =
+        match expr with
+        | BinOp (l, "<=", r) ->
+            match l, r with
+            | Constant a, Constant b -> if a <= b then state else Map.empty
+            | Variable _, Constant 0 ->
+                let left_val = this.eval_expr l state
+                match left_val with
+                | Value (a, b) -> if b > 0 then Map.empty else state
+                | _ -> state
+            | Constant 0, Variable _ ->
+                let right_val = this.eval_expr r state
+                match right_val with
+                | Value (a, b) -> if b >= 0 then state else Map.empty
+                | _ -> state
+            | _ -> state
+        | BinOp(l, ">", r) ->
+            match l, r with
+            | Constant a, Constant b -> if a > b then state else Map.empty
+            | Variable _, Constant 0 ->
+                let left_val = this.eval_expr l state
+                match left_val with
+                | Value (a, b) -> if b > 0 then state else Map.empty
+                | _ -> state
+            | Constant 0, Variable _ ->
+                let right_val = this.eval_expr r state
+                match right_val with
+                | Value (a, b) -> if b > 0 then Map.empty else state
+                | _ -> state
+            | _ -> state
+
+        | BinOp(l, "=", r) ->
+            match l, r with
+            | Constant a, Constant b -> if a = b then state else Map.empty
+            | _ -> state
+
+        | BinOp(l, "!=", r) ->
+            match l, r with
+            | Constant a, Constant b -> if a <> b then state else Map.empty
+            | _ -> state
+
+        | _ -> this.eval_generic_abstr_cond expr state
