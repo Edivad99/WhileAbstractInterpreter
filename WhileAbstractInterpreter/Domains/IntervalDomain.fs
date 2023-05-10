@@ -147,32 +147,35 @@ type Interval =
 
 type IntervalDomain(?dlb:int, ?dub:int) =
     inherit Domain<Interval>()
-    member _.DefinedLowerBound = dlb
-    member _.DefinedUpperBound = dub
+    member _.DefinedLowerBound = if dlb.IsNone then MinusInf else Num dlb.Value
+    member _.DefinedUpperBound = if dub.IsNone then PlusInf else Num dub.Value
+
+    member private this.is_limited() =
+        this.DefinedLowerBound <> MinusInf || this.DefinedUpperBound <> PlusInf
 
     member private this.refineRange interval =
-        match interval with
-        | Bottom -> Bottom
-        | Range(a, b) ->
-            if this.DefinedLowerBound.IsNone || this.DefinedUpperBound.IsNone then
-                interval
-            else
+        if not(this.is_limited()) then interval
+        else
+            match interval with
+            | Bottom -> Bottom
+            | Range(a, b) ->
                 if a > b then Bottom
                 else
-                    let lb = if a < Num this.DefinedLowerBound.Value then MinusInf else a
-                    let ub = if b > Num this.DefinedUpperBound.Value then PlusInf else b
+                    let lb = if a < this.DefinedLowerBound then MinusInf else a
+                    let ub = if b > this.DefinedUpperBound then PlusInf else b
                     Range(lb, ub)
 
     override this.default_var_state =
-        if this.DefinedLowerBound.IsNone || this.DefinedUpperBound.IsNone then
-            Range(MinusInf, PlusInf)
+        if this.is_limited() then
+            Range(this.DefinedLowerBound, this.DefinedUpperBound)
         else
-            Range(Num this.DefinedLowerBound.Value, Num this.DefinedUpperBound.Value)
+            Range(MinusInf, PlusInf)
 
     override this.union x y = Interval.union x y |> this.refineRange
 
     override this.widening x y =
-        if this.DefinedLowerBound.IsSome || this.DefinedUpperBound.IsSome then y
+        // Non dobbiamo fare il widening si il dominio ha dei limiti personalizzati
+        if this.is_limited() then y
         else
             match x, y with
             | Range (a, b), Range(c, d) ->
@@ -226,13 +229,14 @@ type IntervalDomain(?dlb:int, ?dub:int) =
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
-        | Expr.Range (a, b) -> if a <= b then Range (Num a, Num b) else Bottom
+        | Expr.Range (a, b) -> Range (Num a, Num b)
         | _ -> failwithf "Not implemented yet"
+        |> this.refineRange
 
     override this.eval_var_dec var_name expr state =
         let value = this.eval_expr expr state
         match value with
-        | Range _ -> state.Add(var_name, value |> this.refineRange)
+        | Range _ -> state.Add(var_name, value)
         | Bottom -> Map.empty
 
     override this.eval_abstr_cond expr state =
@@ -305,9 +309,8 @@ type IntervalDomain(?dlb:int, ?dub:int) =
                 | Range (a, b), Range (c, d) ->
                     if b <= c then Map.empty
                     else
-                        let state = state.Add(left_var_name, Range(max a (c + Num 1) , b))
-                        // Non ne sono sicuro ma dovrebbe essere così
-                        state.Add(right_var_name, Range(c, min (b - Num 1) d))
+                        state.Add(left_var_name, Range(max a (c + Num 1) , b))
+                             .Add(right_var_name, Range(c, min (b - Num 1) d))
                 | _ -> state
             | _ -> state
 
