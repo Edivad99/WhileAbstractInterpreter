@@ -145,29 +145,50 @@ type Interval =
             | Range (l, r) -> $"[{l.ToString()}, {r.ToString()}]"
             | Bottom -> "\u22A5"
 
-type IntervalDomain() =
+type IntervalDomain(?dlb:int, ?dub:int) =
     inherit Domain<Interval>()
+    member _.DefinedLowerBound = dlb
+    member _.DefinedUpperBound = dub
 
-    override _.default_var_state = Range(MinusInf, PlusInf)
+    member private this.refineRange interval =
+        match interval with
+        | Bottom -> Bottom
+        | Range(a, b) ->
+            if this.DefinedLowerBound.IsNone || this.DefinedUpperBound.IsNone then
+                interval
+            else
+                if a > b then Bottom
+                else
+                    let lb = if a < Num this.DefinedLowerBound.Value then MinusInf else a
+                    let ub = if b > Num this.DefinedUpperBound.Value then PlusInf else b
+                    Range(lb, ub)
 
-    override _.union x y = Interval.union x y
+    override this.default_var_state =
+        if this.DefinedLowerBound.IsNone || this.DefinedUpperBound.IsNone then
+            Range(MinusInf, PlusInf)
+        else
+            Range(Num this.DefinedLowerBound.Value, Num this.DefinedUpperBound.Value)
 
-    override _.widening x y =
-        match x, y with
-        | Range (a, b), Range(c, d) ->
-            let lower =
-                        if a <= c then a
-                        elif Num 0 <= c && c < a then Num 0
-                        else MinusInf
-            let higher =
-                        if b >= d then b
-                        elif Num 0 >= d && d > b then Num 0
-                        else PlusInf
-            Range (lower, higher)
-        | Bottom, _ -> y
-        | _, Bottom -> x
+    override this.union x y = Interval.union x y |> this.refineRange
 
-    override _.narrowing x y =
+    override this.widening x y =
+        if this.DefinedLowerBound.IsSome || this.DefinedUpperBound.IsSome then y
+        else
+            match x, y with
+            | Range (a, b), Range(c, d) ->
+                let lower =
+                            if a <= c then a
+                            elif Num 0 <= c && c < a then Num 0
+                            else MinusInf
+                let higher =
+                            if b >= d then b
+                            elif Num 0 >= d && d > b then Num 0
+                            else PlusInf
+                Range (lower, higher)
+            | Bottom, _ -> y
+            | _, Bottom -> x
+
+    override this.narrowing x y =
         match x, y with
         | Range (a, b), Range (c, d) ->
             let lower = if a = MinusInf then c else a
@@ -175,14 +196,16 @@ type IntervalDomain() =
             Range(lower, higher)
         | Bottom, _ -> y
         | _, Bottom -> x
+        |> this.refineRange
 
-    override _.intersect x y =
+    override this.intersect x y =
         match x, y with
         | Range(a, b), Range(c, d) ->
             let lower = max a c
             let higher = min b d
             if lower <= higher then Range(lower, higher) else Bottom
         | _ -> Bottom
+        |> this.refineRange
 
     member private this.eval_expr expr state =
         match expr with
@@ -203,13 +226,13 @@ type IntervalDomain() =
             | "*" -> left_val * right_val
             | "/" -> left_val / right_val
             | _ -> failwithf "Not implemented yet"
-        | Expr.Range (a, b) -> Range (Num a, Num b)
+        | Expr.Range (a, b) -> if a <= b then Range (Num a, Num b) else Bottom
         | _ -> failwithf "Not implemented yet"
 
     override this.eval_var_dec var_name expr state =
         let value = this.eval_expr expr state
         match value with
-        | Range _ -> state.Add(var_name, value)
+        | Range _ -> state.Add(var_name, value |> this.refineRange)
         | Bottom -> Map.empty
 
     override this.eval_abstr_cond expr state =
