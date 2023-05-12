@@ -8,7 +8,6 @@ open FSharp.Text.Lexing
 open IntervalDomain
 open SignDomain
 open CongruenceDomain
-open Domain
 open AbstractState
 
 let evaluate input =
@@ -24,21 +23,24 @@ let read_file filename =
 [<EntryPoint>]
 let main args =
     let input = """
-x := [-40; 40];
-if x >= -10 && x < 10 then {
-    skip;
-} else {
-    skip;
+x := 1;
+y := 0;
+
+while (x < 40) do {
+    x := x + 1;
+    if (x = 4) then {
+        y := 1;
+    }
 }
     """
-    //let input = read_file "if.wl"
+    //let input = read_file "interval_loop.wl"
 
     let program = evaluate input
-    Console.WriteLine(program)
+    //Console.WriteLine(program)
 
-    //let domain = IntervalDomain()
+    let domain = IntervalDomain()
     //let domain = SignDomain()
-    let domain = CongruenceDomain()
+    //let domain = CongruenceDomain()
 
 
     let abstract_state = AbstractState<_>(domain)
