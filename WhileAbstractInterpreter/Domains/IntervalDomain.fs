@@ -117,11 +117,19 @@ type Interval =
             | Bottom, _ -> y
             | _, Bottom -> x
 
+        static member intersect x y =
+            match x, y with
+            | Range(a, b), Range(c, d) ->
+                let lower = max a c
+                let higher = min b d
+                if lower <= higher then Range(lower, higher) else Bottom
+            | _ -> Bottom
+
         static member ( / ) (x, y) =
             match x, y with
             | Range (a, b), Range (c, d) ->
                 if c = Num 0 && d = Num 0 then Bottom // if [c,d] = [0,0]
-                elif Num 0 <= c then
+                elif Num 1 <= c then
                     let ac = a / c
                     let ad = a / d
                     let bc = b / c
@@ -130,14 +138,14 @@ type Interval =
                     let min = List.min [ac; ad; bc; bd]
                     let max = List.max [ac; ad; bc; bd]
                     Range (min, max)
-                elif d <= Num 0 then
+                elif d <= Num -1 then
                     let t1 = -x
                     let t2 = -y
                     t1 / t2 // [-b, -a] / [-d, -c] if d <= 0
                 else
-                    let t1 = x / (Range (c, Num 0))
-                    let t2 = x / (Range (Num 0, d))
-                    Interval.union t1 t2 // ([a, b] / [c, 0]) U ([a, b] / [0, d])
+                    let t1 = x / Interval.intersect y (Range(Num 1, PlusInf))
+                    let t2 = x / Interval.intersect y (Range(MinusInf, Num -1))
+                    Interval.union t1 t2
             | _ -> Bottom
 
         override this.ToString() =
@@ -174,7 +182,7 @@ type IntervalDomain(?dlb:int, ?dub:int) =
     override this.union x y = Interval.union x y |> this.refineRange
 
     override this.widening x y =
-        // Non dobbiamo fare il widening si il dominio ha dei limiti personalizzati
+        // Non dobbiamo fare il widening se il dominio ha dei limiti personalizzati
         if this.is_limited() then y
         else
             match x, y with
@@ -201,14 +209,7 @@ type IntervalDomain(?dlb:int, ?dub:int) =
         | _, Bottom -> x
         |> this.refineRange
 
-    override this.intersect x y =
-        match x, y with
-        | Range(a, b), Range(c, d) ->
-            let lower = max a c
-            let higher = min b d
-            if lower <= higher then Range(lower, higher) else Bottom
-        | _ -> Bottom
-        |> this.refineRange
+    override this.intersect x y = Interval.intersect x y |> this.refineRange
 
     member private this.eval_expr expr state =
         match expr with
