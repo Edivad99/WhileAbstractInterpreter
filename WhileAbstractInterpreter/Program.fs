@@ -23,27 +23,33 @@ let read_file filename =
 [<EntryPoint>]
 let main args =
     let input = """
-x := 1;
-y := 0;
-
-while (x < 40) do {
+x := 0;
+y := random;
+if y = 0 then {
     x := x + 1;
-    if (x = 4) then {
-        y := 1;
+    if x > 40 then {
+        x := 0;
     }
 }
     """
-    //let input = read_file "interval_loop.wl"
+    let domain = IntervalDomain()
+    let input = read_file "simple_loop.wl"
+    //let input = read_file "interval.wl"
+    //let input = read_file "random.wl"
+
+    //let domain = SignDomain()
+    //let input = read_file "simple_loop_sign.wl"
+
+    //let domain = CongruenceDomain()
+    //let input = read_file "congruence_loop.wl"
+
+    //let domain = IntervalDomain()
+    //let input = read_file "widening_delay.wl"
 
     let program = evaluate input
     //Console.WriteLine(program)
 
-    let domain = IntervalDomain()
-    //let domain = SignDomain()
-    //let domain = CongruenceDomain()
-
-
-    let abstract_state = AbstractState<_>(domain)
+    let abstract_state = AbstractState<_>(domain) //delay:3
 
     let start = Stopwatch.GetTimestamp()
     let result, program_points = abstract_state.eval program
