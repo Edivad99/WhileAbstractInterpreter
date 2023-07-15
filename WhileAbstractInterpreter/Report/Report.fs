@@ -14,7 +14,7 @@ let private source =
         <title>While Static Analyzer</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
-    <body style="margin-left: 20px;background-color: lightgray;">
+    <body style="margin-left: 20px;background-color: white;">
         <h3 class="display-3">While Static Analyzer</h3>
         <strong class="text-body-secondary">Davide Albiero, Damiano Mason</strong>
         <br>
