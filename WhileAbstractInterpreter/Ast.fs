@@ -11,6 +11,8 @@ type Expr =
 
 type Stm =
     | VarDec of string * Expr
+    | VarIncr of string
+    | VarDecr of string
     | Skip
     | IfThenElse of Expr * Stm * Stm option
     | While of Expr * Stm

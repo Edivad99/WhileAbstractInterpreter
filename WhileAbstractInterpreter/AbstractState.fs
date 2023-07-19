@@ -20,6 +20,11 @@ type AbstractState<'T when 'T: equality>(domain : Domain<'T>, ?widening_delay:in
                 let state = this.Domain.eval_var_dec var_name expr state
                 in (state, state_points @ [state])
 
+            | VarIncr (var_name) ->
+                this.eval (VarDec(var_name, BinOp(Variable var_name, "+", Constant 1)), state, state_points)
+            | VarDecr (var_name) ->
+                this.eval (VarDec(var_name, BinOp(Variable var_name, "-", Constant 1)), state, state_points)
+
             // Esegui il primo sotto-programma e poi il secondo sullo stato risultato
             // dall'esecuzione del primo
             | Seq (p1, p2) ->

@@ -44,6 +44,8 @@ type Domain<'T when 'T: equality>() =
         let rec find_variable program =
             match program with
             | VarDec (name, _) -> Set.singleton name
+            | VarIncr _
+            | VarDecr _
             | Skip -> Set.empty
             | IfThenElse (_, true_branch, None) -> find_variable true_branch
             | IfThenElse (_, true_branch, Some false_branch) ->

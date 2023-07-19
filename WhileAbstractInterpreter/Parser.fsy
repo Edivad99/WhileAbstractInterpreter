@@ -34,6 +34,8 @@ seqStatement
 statement
     : Var ASN arithmExpr                                    { VarDec ($1, $3) }
     | Var ASN RAND                                          { VarDec ($1, Random) }
+    | Var PLUS PLUS                                         { VarIncr ($1) }
+    | Var MINUS MINUS                                       { VarDecr ($1) }
     | SKIP                                                  { Skip }
     | IF boolExpr THEN statement ELSE statement             { IfThenElse ($2, $4, Some $6) }
     | IF boolExpr THEN statement                            { IfThenElse ($2, $4, None) }
