@@ -2,7 +2,7 @@
 
 Software Verification project developed in the year 2022-2023 by Davide Albiero and Damiano Mason.
 
-The abstract Interpreter implements 3 types of domains:
+The Abstract Interpreter implements 3 types of domains:
 - Interval Domain
 - Sign Domain
 - Congruence Domain
